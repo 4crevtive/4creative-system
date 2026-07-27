@@ -1,0 +1,3 @@
+ALTER TABLE public.tasks
+  ADD COLUMN IF NOT EXISTS shooting_starts_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS shooting_ends_at TIMESTAMPTZ;
