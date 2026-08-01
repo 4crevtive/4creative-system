@@ -17,6 +17,7 @@ import {
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import * as XLSX from "xlsx";
+import { AddMovementDialog } from "@/components/admin/add-movement-dialog";
 
 type Scope = "all" | "studio" | "agency";
 const SALARY_CATS = new Set(["salary", "salaries", "مرتبات"]);
@@ -154,6 +155,7 @@ export function ConsolidatedFinance() {
           <p className="text-muted-foreground mt-1 text-sm">نظرة موحدة على حسابات الاستوديو و 4Creative · من {fromDate} إلى {toDate}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <AddMovementDialog />
           <Button variant="outline" onClick={() => window.print()} className="rounded-xl">
             <Printer className="h-4 w-4 ml-1" /> طباعة
           </Button>
