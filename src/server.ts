@@ -1,4 +1,3 @@
-import "./lib/env-aliases.server";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";

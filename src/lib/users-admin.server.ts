@@ -27,10 +27,7 @@ function createUsersAdminFetch(supabaseKey: string): typeof fetch {
 
 export function createUsersAdminClient() {
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_SECRET_KEY ??
-    process.env.SUPABASE_SERVICE_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
 
   if (!supabaseUrl || !serviceRoleKey) {
     const missing = [
@@ -38,7 +35,7 @@ export function createUsersAdminClient() {
       ...(!serviceRoleKey ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
     ];
     throw new Error(
-      `Missing backend runtime environment variable(s): ${missing.join(", ")}. On Vercel, add these in Project Settings → Environment Variables, then redeploy. The service role key must come from the Supabase project you own; it cannot be derived from the anon/publishable key.`,
+      `Missing backend runtime environment variable(s): ${missing.join(", ")}. Rebind Lovable Cloud secrets and restart the server runtime.`,
     );
   }
 

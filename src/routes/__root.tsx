@@ -103,6 +103,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "4Creative — نظام الإدارة الداخلي" },
       { name: "twitter:description", content: "نظام ERP + CRM متكامل لإدارة استوديو 4Creative ووكالة الماركتنج والبرمجة." },
+      { property: "og:image", content: "/og-image.png" },
+      { name: "twitter:image", content: "/og-image.png" },
     ],
     links: [
       {
