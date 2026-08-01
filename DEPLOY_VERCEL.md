@@ -16,8 +16,6 @@ This project is a TanStack Start app built with Vite + Nitro. Nitro's `vercel` p
 
 If you self-host on Vercel, add these in **Vercel → Project → Settings → Environment Variables** (Production + Preview). Do not hardcode these values in `vercel.json`.
 
-Use values from the Supabase project you own. Lovable-managed backend secrets are not exported to Vercel.
-
 Client (public):
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
@@ -29,12 +27,6 @@ Server (private):
 - `SUPABASE_PROJECT_ID`
 - `SUPABASE_SERVICE_ROLE_KEY` (required for admin user-management screens)
 - Any other secrets your server functions read via `process.env.*`
-
-Compatibility aliases:
-- If your Supabase dashboard shows an `anon` key instead of a `publishable` key, use the same value for `VITE_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_PUBLISHABLE_KEY`.
-- If your host names the secret key `SUPABASE_SECRET_KEY`, also set `SUPABASE_SERVICE_ROLE_KEY` to that same secret value. This app's user-management functions require `SUPABASE_SERVICE_ROLE_KEY` for Auth Admin API calls such as create user, delete user, list auth users, and password resets.
-
-Never use the anon/publishable key as `SUPABASE_SERVICE_ROLE_KEY`. They are different keys with different privileges.
 
 After changing variables in Vercel, trigger a fresh **Redeploy**. Vercel does not update the running deployment just because variables were edited.
 
