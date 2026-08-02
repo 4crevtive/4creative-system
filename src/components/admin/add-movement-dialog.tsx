@@ -127,9 +127,12 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
       if (!cashboxId) throw new Error("لا توجد خزنة مرتبطة بهذه الشركة");
       const { data: u } = await supabase.auth.getUser();
       const finalCategory = v.category === "__other__" ? (v.customCategory ?? "").trim() : v.category;
-      const meta = [`طريقة الدفع: ${v.method}`, v.reference ? `مرجع: ${v.reference}` : "", v.notes?.trim() ? `ملاحظات: ${v.notes.trim()}` : ""]
-        .filter(Boolean).join(" · ");
-      const { error } = await supabase.from("cash_movements").insert({
+      const meta = [
+        isEdit ? "" : `طريقة الدفع: ${v.method}`,
+        v.reference ? `مرجع: ${v.reference}` : "",
+        v.notes?.trim() ? `ملاحظات: ${v.notes.trim()}` : "",
+      ].filter(Boolean).join(" · ");
+      const payload = {
         cashbox_id: cashboxId,
         direction: v.direction as never,
         amount: v.amount,
@@ -137,21 +140,29 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
         business_date: format(v.business_date, "yyyy-MM-dd"),
         description: meta ? `${v.description} — ${meta}` : v.description,
         contact_id: v.contact_id || null,
-        created_by: u.user?.id ?? null,
-      });
+      };
+      if (isEdit && movement) {
+        const { error } = await supabase.from("cash_movements").update(payload).eq("id", movement.id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("cash_movements")
+        .insert({ ...payload, created_by: u.user?.id ?? null });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تسجيل الحركة بنجاح");
+      toast.success(isEdit ? "تم تحديث الحركة" : "تم تسجيل الحركة بنجاح");
       qc.invalidateQueries({ queryKey: ["movements-consolidated"] });
       qc.invalidateQueries({ queryKey: ["movements"] });
-      form.reset({
-        direction, company, amount: undefined as unknown as number, category: "", customCategory: "",
-        business_date: new Date(), method: "كاش", contact_id: "", reference: "", description: "", notes: "",
-      });
+      if (!isEdit) {
+        form.reset({
+          direction, company, amount: undefined as unknown as number, category: "", customCategory: "",
+          business_date: new Date(), method: "كاش", contact_id: "", reference: "", description: "", notes: "",
+        });
+      }
       setOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message || "فشل تسجيل الحركة"),
+    onError: (e: Error) => toast.error(e.message || (isEdit ? "فشل تحديث الحركة" : "فشل تسجيل الحركة")),
   });
 
   const err = form.formState.errors;
@@ -159,19 +170,28 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
-          <Plus className="h-4 w-4 ml-1" /> إضافة حركة
-        </Button>
+        {isEdit ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" aria-label="تعديل الحركة">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
+            <Plus className="h-4 w-4 ml-1" /> إضافة حركة
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent dir="rtl" className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-500" /> حركة مالية جديدة
+            <Sparkles className="h-5 w-5 text-indigo-500" /> {isEdit ? "تعديل الحركة المالية" : "حركة مالية جديدة"}
           </DialogTitle>
           <DialogDescription>
-            سجّل مصروفًا أو إيرادًا لأي من الشركتين بتفاصيل كاملة — يظهر فورًا في الحسابات الشاملة.
+            {isEdit
+              ? "عدّل بيانات الحركة — يتم تحديث الحسابات فورًا بعد الحفظ."
+              : "سجّل مصروفًا أو إيرادًا لأي من الشركتين بتفاصيل كاملة — يظهر فورًا في الحسابات الشاملة."}
           </DialogDescription>
         </DialogHeader>
+
 
         <form
           className="space-y-5"
