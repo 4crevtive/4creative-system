@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
-  ArrowDownCircle, ArrowUpCircle, CalendarIcon, Loader2, Plus, Camera, Megaphone, Sparkles,
+  ArrowDownCircle, ArrowUpCircle, CalendarIcon, Loader2, Plus, Camera, Megaphone, Sparkles, Pencil,
 } from "lucide-react";
 
 const OUT_CATEGORIES = [
@@ -52,16 +52,41 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function AddMovementDialog() {
+export type EditableMovement = {
+  id: string;
+  cashbox_id: string;
+  direction: "in" | "out";
+  amount: number;
+  category: string | null;
+  description: string | null;
+  business_date: string;
+  contact_id: string | null;
+  company?: string;
+};
+
+export function AddMovementDialog({ movement }: { movement?: EditableMovement }) {
+  const isEdit = !!movement;
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
+
+  const initialCategory = movement?.category
+    ? ([...OUT_CATEGORIES, ...IN_CATEGORIES].includes(movement.category) ? movement.category : "__other__")
+    : "";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      direction: "out", company: "studio", amount: undefined as unknown as number,
-      category: "", customCategory: "", business_date: new Date(),
-      method: "كاش", contact_id: "", reference: "", description: "", notes: "",
+      direction: movement?.direction ?? "out",
+      company: (movement?.company === "agency" ? "agency" : "studio"),
+      amount: (movement ? Number(movement.amount) : undefined) as unknown as number,
+      category: initialCategory,
+      customCategory: initialCategory === "__other__" ? (movement?.category ?? "") : "",
+      business_date: movement?.business_date ? new Date(`${movement.business_date}T00:00:00`) : new Date(),
+      method: "كاش",
+      contact_id: movement?.contact_id ?? "",
+      reference: "",
+      description: movement?.description ?? "",
+      notes: "",
     },
   });
 
@@ -70,7 +95,12 @@ export function AddMovementDialog() {
   const category = form.watch("category");
   const amount = form.watch("amount");
 
-  useEffect(() => { form.setValue("category", ""); }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [dirTouched, setDirTouched] = useState(false);
+  useEffect(() => {
+    if (!dirTouched) return;
+    form.setValue("category", "");
+  }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const { data: boxes } = useQuery({
     queryKey: ["cashboxes-by-company"],
@@ -97,9 +127,12 @@ export function AddMovementDialog() {
       if (!cashboxId) throw new Error("لا توجد خزنة مرتبطة بهذه الشركة");
       const { data: u } = await supabase.auth.getUser();
       const finalCategory = v.category === "__other__" ? (v.customCategory ?? "").trim() : v.category;
-      const meta = [`طريقة الدفع: ${v.method}`, v.reference ? `مرجع: ${v.reference}` : "", v.notes?.trim() ? `ملاحظات: ${v.notes.trim()}` : ""]
-        .filter(Boolean).join(" · ");
-      const { error } = await supabase.from("cash_movements").insert({
+      const meta = [
+        isEdit ? "" : `طريقة الدفع: ${v.method}`,
+        v.reference ? `مرجع: ${v.reference}` : "",
+        v.notes?.trim() ? `ملاحظات: ${v.notes.trim()}` : "",
+      ].filter(Boolean).join(" · ");
+      const payload = {
         cashbox_id: cashboxId,
         direction: v.direction as never,
         amount: v.amount,
@@ -107,21 +140,29 @@ export function AddMovementDialog() {
         business_date: format(v.business_date, "yyyy-MM-dd"),
         description: meta ? `${v.description} — ${meta}` : v.description,
         contact_id: v.contact_id || null,
-        created_by: u.user?.id ?? null,
-      });
+      };
+      if (isEdit && movement) {
+        const { error } = await supabase.from("cash_movements").update(payload).eq("id", movement.id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase.from("cash_movements")
+        .insert({ ...payload, created_by: u.user?.id ?? null });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("تم تسجيل الحركة بنجاح");
+      toast.success(isEdit ? "تم تحديث الحركة" : "تم تسجيل الحركة بنجاح");
       qc.invalidateQueries({ queryKey: ["movements-consolidated"] });
       qc.invalidateQueries({ queryKey: ["movements"] });
-      form.reset({
-        direction, company, amount: undefined as unknown as number, category: "", customCategory: "",
-        business_date: new Date(), method: "كاش", contact_id: "", reference: "", description: "", notes: "",
-      });
+      if (!isEdit) {
+        form.reset({
+          direction, company, amount: undefined as unknown as number, category: "", customCategory: "",
+          business_date: new Date(), method: "كاش", contact_id: "", reference: "", description: "", notes: "",
+        });
+      }
       setOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message || "فشل تسجيل الحركة"),
+    onError: (e: Error) => toast.error(e.message || (isEdit ? "فشل تحديث الحركة" : "فشل تسجيل الحركة")),
   });
 
   const err = form.formState.errors;
@@ -129,19 +170,28 @@ export function AddMovementDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
-          <Plus className="h-4 w-4 ml-1" /> إضافة حركة
-        </Button>
+        {isEdit ? (
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground" aria-label="تعديل الحركة">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
+            <Plus className="h-4 w-4 ml-1" /> إضافة حركة
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent dir="rtl" className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl">
         <DialogHeader className="text-right">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-500" /> حركة مالية جديدة
+            <Sparkles className="h-5 w-5 text-indigo-500" /> {isEdit ? "تعديل الحركة المالية" : "حركة مالية جديدة"}
           </DialogTitle>
           <DialogDescription>
-            سجّل مصروفًا أو إيرادًا لأي من الشركتين بتفاصيل كاملة — يظهر فورًا في الحسابات الشاملة.
+            {isEdit
+              ? "عدّل بيانات الحركة — يتم تحديث الحسابات فورًا بعد الحفظ."
+              : "سجّل مصروفًا أو إيرادًا لأي من الشركتين بتفاصيل كاملة — يظهر فورًا في الحسابات الشاملة."}
           </DialogDescription>
         </DialogHeader>
+
 
         <form
           className="space-y-5"
@@ -149,14 +199,14 @@ export function AddMovementDialog() {
         >
           {/* Direction */}
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => form.setValue("direction", "out")}
+            <button type="button" onClick={() => { setDirTouched(true); form.setValue("direction", "out"); }}
               className={cn("p-4 rounded-2xl border text-right transition-all",
                 direction === "out" ? "border-rose-300 bg-rose-50/70 ring-2 ring-rose-200" : "hover:bg-muted/50")}>
               <ArrowUpCircle className={cn("h-6 w-6 mb-2", direction === "out" ? "text-rose-600" : "text-muted-foreground")} />
               <div className="font-bold text-sm">منصرف / مصروف</div>
               <div className="text-xs text-muted-foreground">خارج من الخزنة</div>
             </button>
-            <button type="button" onClick={() => form.setValue("direction", "in")}
+            <button type="button" onClick={() => { setDirTouched(true); form.setValue("direction", "in"); }}
               className={cn("p-4 rounded-2xl border text-right transition-all",
                 direction === "in" ? "border-emerald-300 bg-emerald-50/70 ring-2 ring-emerald-200" : "hover:bg-muted/50")}>
               <ArrowDownCircle className={cn("h-6 w-6 mb-2", direction === "in" ? "text-emerald-600" : "text-muted-foreground")} />
@@ -286,7 +336,7 @@ export function AddMovementDialog() {
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => setOpen(false)}>إلغاء</Button>
             <Button type="submit" disabled={save.isPending} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
               {save.isPending && <Loader2 className="h-4 w-4 ml-1 animate-spin" />}
-              حفظ الحركة
+              {isEdit ? "حفظ التعديلات" : "حفظ الحركة"}
             </Button>
           </DialogFooter>
         </form>
