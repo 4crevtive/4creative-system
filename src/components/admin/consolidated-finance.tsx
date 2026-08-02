@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -12,12 +12,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import {
   ArrowDownCircle, ArrowUpCircle, TrendingUp, TrendingDown, Wallet, Printer,
-  Camera, Megaphone, FileSpreadsheet, FileText, CalendarIcon, X, FileSearch,
+  Camera, Megaphone, FileSpreadsheet, FileText, CalendarIcon, X, FileSearch, Trash2, Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import * as XLSX from "xlsx";
 import { AddMovementDialog } from "@/components/admin/add-movement-dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 type Scope = "all" | "studio" | "agency";
 const SALARY_CATS = new Set(["salary", "salaries", "مرتبات"]);
@@ -25,7 +30,7 @@ const COMPANY_LABEL: Record<string, string> = { studio: "الاستوديو", ag
 
 type Movement = {
   id: string; direction: "in" | "out"; amount: number; category: string | null;
-  description: string | null; created_at: string; cashbox_id: string;
+  description: string | null; created_at: string; business_date: string; cashbox_id: string;
   contact_id: string | null; created_by: string | null;
   contact?: { full_name?: string } | null;
 };
@@ -63,7 +68,7 @@ export function ConsolidatedFinance() {
     enabled: boxIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("cash_movements")
-        .select("id, direction, amount, category, description, created_at, cashbox_id, contact_id, created_by, contact:contacts(full_name)")
+        .select("id, direction, amount, category, description, created_at, business_date, cashbox_id, contact_id, created_by, contact:contacts(full_name)")
         .in("cashbox_id", boxIds)
         .gte("business_date", fromDate).lte("business_date", toDate)
         .order("created_at", { ascending: false });
@@ -234,7 +239,7 @@ export function ConsolidatedFinance() {
         <KpiTile tone="rose" icon={TrendingDown} label="المصاريف" value={totalAll.expenses} />
         <KpiTile tone="amber" icon={Wallet} label="المرتبات" value={totalAll.salaries} />
         <KpiTile tone="slate" icon={ArrowUpCircle} label="إجمالي المنصرف" value={totalAll.out} />
-        <div className="bg-indigo-600 p-5 rounded-3xl flex flex-col gap-2 shadow-lg shadow-indigo-100 text-white">
+        <div className="bg-indigo-600 dark:bg-indigo-500 p-5 rounded-3xl flex flex-col gap-2 shadow-lg shadow-indigo-100 dark:shadow-indigo-500/20 text-white">
           <div className="text-white/80 bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-1">
             <TrendingUp className="w-5 h-5" />
           </div>
@@ -280,7 +285,9 @@ export function ConsolidatedFinance() {
             {scoped.map((m) => (
               <div key={m.id} className="flex items-center gap-3 p-4 hover:bg-muted/40 transition-colors">
                 <div className={cn("h-9 w-9 rounded-xl grid place-items-center",
-                  m.direction === "in" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
+                  m.direction === "in"
+                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    : "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300")}>
                   {m.direction === "in" ? <ArrowDownCircle className="h-5 w-5" /> : <ArrowUpCircle className="h-5 w-5" />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -294,8 +301,19 @@ export function ConsolidatedFinance() {
                   </div>
                 </div>
                 <div className={cn("font-bold tabular-nums text-sm md:text-base",
-                  m.direction === "in" ? "text-emerald-700" : "text-rose-700")}>
+                  m.direction === "in" ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400")}>
                   {m.direction === "in" ? "+" : "−"} {Number(m.amount).toLocaleString()} ج
+                </div>
+                <div className="flex items-center gap-0.5 print:hidden">
+                  <AddMovementDialog
+                    key={`edit-${m.id}`}
+                    movement={{
+                      id: m.id, cashbox_id: m.cashbox_id, direction: m.direction, amount: Number(m.amount),
+                      category: m.category, description: m.description, business_date: m.business_date,
+                      contact_id: m.contact_id, company: m.company,
+                    }}
+                  />
+                  <DeleteMovementButton id={m.id} label={m.description || m.category || "حركة"} />
                 </div>
               </div>
             ))}
@@ -306,14 +324,71 @@ export function ConsolidatedFinance() {
   );
 }
 
+function DeleteMovementButton({ id, label }: { id: string; label: string }) {
+  const qc = useQueryClient();
+  const del = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("cash_movements").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("تم حذف الحركة");
+      qc.invalidateQueries({ queryKey: ["movements-consolidated"] });
+      qc.invalidateQueries({ queryKey: ["movements"] });
+    },
+    onError: (e: Error) => toast.error(e.message || "فشل حذف الحركة"),
+  });
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive" aria-label="حذف الحركة">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent dir="rtl">
+        <AlertDialogHeader className="text-right">
+          <AlertDialogTitle>حذف الحركة؟</AlertDialogTitle>
+          <AlertDialogDescription>
+            سيتم حذف «{label}» نهائيًا من الحسابات. لا يمكن التراجع عن هذه الخطوة.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-2 sm:gap-2">
+          <AlertDialogCancel className="rounded-xl">إلغاء</AlertDialogCancel>
+          <AlertDialogAction
+            className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={(e) => { e.preventDefault(); del.mutate(); }}
+            disabled={del.isPending}
+          >
+            {del.isPending && <Loader2 className="h-4 w-4 ml-1 animate-spin" />}
+            حذف
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function KpiTile({
   tone, icon: Icon, label, value,
 }: { tone: "emerald" | "rose" | "amber" | "slate"; icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
   const map = {
-    emerald: { bg: "bg-emerald-50/60 border-emerald-100", chip: "bg-emerald-100 text-emerald-600" },
-    rose: { bg: "bg-rose-50/60 border-rose-100", chip: "bg-rose-100 text-rose-600" },
-    amber: { bg: "bg-amber-50/60 border-amber-100", chip: "bg-amber-100 text-amber-600" },
-    slate: { bg: "bg-slate-100 border-slate-200", chip: "bg-slate-200 text-slate-600" },
+    emerald: {
+      bg: "bg-emerald-50/60 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20",
+      chip: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300",
+    },
+    rose: {
+      bg: "bg-rose-50/60 border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20",
+      chip: "bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300",
+    },
+    amber: {
+      bg: "bg-amber-50/60 border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20",
+      chip: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300",
+    },
+    slate: {
+      bg: "bg-slate-100 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/20",
+      chip: "bg-slate-200 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300",
+    },
   } as const;
   const t = map[tone];
   return (
