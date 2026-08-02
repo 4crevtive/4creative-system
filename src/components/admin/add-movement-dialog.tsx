@@ -52,16 +52,41 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function AddMovementDialog() {
+export type EditableMovement = {
+  id: string;
+  cashbox_id: string;
+  direction: "in" | "out";
+  amount: number;
+  category: string | null;
+  description: string | null;
+  business_date: string;
+  contact_id: string | null;
+  company?: string;
+};
+
+export function AddMovementDialog({ movement }: { movement?: EditableMovement }) {
+  const isEdit = !!movement;
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
+
+  const initialCategory = movement?.category
+    ? ([...OUT_CATEGORIES, ...IN_CATEGORIES].includes(movement.category) ? movement.category : "__other__")
+    : "";
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      direction: "out", company: "studio", amount: undefined as unknown as number,
-      category: "", customCategory: "", business_date: new Date(),
-      method: "كاش", contact_id: "", reference: "", description: "", notes: "",
+      direction: movement?.direction ?? "out",
+      company: (movement?.company === "agency" ? "agency" : "studio"),
+      amount: (movement ? Number(movement.amount) : undefined) as unknown as number,
+      category: initialCategory,
+      customCategory: initialCategory === "__other__" ? (movement?.category ?? "") : "",
+      business_date: movement?.business_date ? new Date(`${movement.business_date}T00:00:00`) : new Date(),
+      method: "كاش",
+      contact_id: movement?.contact_id ?? "",
+      reference: "",
+      description: movement?.description ?? "",
+      notes: "",
     },
   });
 
@@ -70,7 +95,12 @@ export function AddMovementDialog() {
   const category = form.watch("category");
   const amount = form.watch("amount");
 
-  useEffect(() => { form.setValue("category", ""); }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [dirTouched, setDirTouched] = useState(false);
+  useEffect(() => {
+    if (!dirTouched) return;
+    form.setValue("category", "");
+  }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const { data: boxes } = useQuery({
     queryKey: ["cashboxes-by-company"],
