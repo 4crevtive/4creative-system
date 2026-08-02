@@ -19,7 +19,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
-  ArrowDownCircle, ArrowUpCircle, CalendarIcon, Loader2, Plus, Camera, Megaphone, Sparkles,
+  ArrowDownCircle, ArrowUpCircle, CalendarIcon, Loader2, Plus, Camera, Megaphone, Sparkles, Pencil,
 } from "lucide-react";
 
 const OUT_CATEGORIES = [
@@ -199,14 +199,14 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
         >
           {/* Direction */}
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => form.setValue("direction", "out")}
+            <button type="button" onClick={() => { setDirTouched(true); form.setValue("direction", "out"); }}
               className={cn("p-4 rounded-2xl border text-right transition-all",
                 direction === "out" ? "border-rose-300 bg-rose-50/70 ring-2 ring-rose-200" : "hover:bg-muted/50")}>
               <ArrowUpCircle className={cn("h-6 w-6 mb-2", direction === "out" ? "text-rose-600" : "text-muted-foreground")} />
               <div className="font-bold text-sm">منصرف / مصروف</div>
               <div className="text-xs text-muted-foreground">خارج من الخزنة</div>
             </button>
-            <button type="button" onClick={() => form.setValue("direction", "in")}
+            <button type="button" onClick={() => { setDirTouched(true); form.setValue("direction", "in"); }}
               className={cn("p-4 rounded-2xl border text-right transition-all",
                 direction === "in" ? "border-emerald-300 bg-emerald-50/70 ring-2 ring-emerald-200" : "hover:bg-muted/50")}>
               <ArrowDownCircle className={cn("h-6 w-6 mb-2", direction === "in" ? "text-emerald-600" : "text-muted-foreground")} />
@@ -336,7 +336,7 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => setOpen(false)}>إلغاء</Button>
             <Button type="submit" disabled={save.isPending} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground">
               {save.isPending && <Loader2 className="h-4 w-4 ml-1 animate-spin" />}
-              حفظ الحركة
+              {isEdit ? "حفظ التعديلات" : "حفظ الحركة"}
             </Button>
           </DialogFooter>
         </form>
