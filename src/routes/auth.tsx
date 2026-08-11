@@ -20,8 +20,12 @@ import {
 import { loginSchema, type LoginInput } from "@/lib/validation";
 
 export const Route = createFileRoute("/auth")({
-  ssr: false,
-  head: () => ({ meta: [{ title: "تسجيل الدخول — 4Creative" }] }),
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول — 4Creative" },
+      { name: "description", content: "الدخول إلى نظام الإدارة الداخلي لـ 4Creative." },
+    ],
+  }),
   component: AuthPage,
 });
 
