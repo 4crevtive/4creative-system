@@ -3,11 +3,12 @@ import { AppShell } from "@/components/app-shell";
 import { AreaGate } from "@/components/area-gate";
 import { assertAreaAccess } from "@/lib/access.functions";
 import {
-  LayoutDashboard, Wallet, Scissors, Palette, Camera, ListTodo, Code2, Megaphone, Briefcase,
+  LayoutDashboard, Wallet, Scissors, Palette, Camera, ListTodo, Code2, Megaphone, Briefcase, Users,
 } from "lucide-react";
 
 const agencyNav = [
   { to: "/agency", label: "لوحة الوكالة", icon: LayoutDashboard },
+  { to: "/agency/clients", label: "العملاء", icon: Users },
   { to: "/agency/projects", label: "المشاريع", icon: Briefcase },
   { to: "/agency/accounts", label: "الحسابات", icon: Wallet },
   { to: "/agency/montage", label: "المونتاج", icon: Scissors },

@@ -63,6 +63,7 @@ import { Route as AuthenticatedHubAccountsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedReceptionClientsIdRouteImport } from './routes/_authenticated/reception/clients.$id'
 import { Route as AuthenticatedProductionTaskIdRouteImport } from './routes/_authenticated/production/task.$id'
 import { Route as AuthenticatedAgencyProjectsIdRouteImport } from './routes/_authenticated/agency/projects.$id'
+import { Route as AuthenticatedAgencyClientsIdRouteImport } from './routes/_authenticated/agency/clients.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -375,6 +376,12 @@ const AuthenticatedAgencyProjectsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedAgencyProjectsRoute,
   } as any)
+const AuthenticatedAgencyClientsIdRoute =
+  AuthenticatedAgencyClientsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAgencyClientsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -392,7 +399,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedHubReportsRoute
   '/users': typeof AuthenticatedHubUsersRoute
   '/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
-  '/agency/clients': typeof AuthenticatedAgencyClientsRoute
+  '/agency/clients': typeof AuthenticatedAgencyClientsRouteWithChildren
   '/agency/design': typeof AuthenticatedAgencyDesignRoute
   '/agency/montage': typeof AuthenticatedAgencyMontageRoute
   '/agency/photography': typeof AuthenticatedAgencyPhotographyRoute
@@ -426,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/production/': typeof AuthenticatedProductionIndexRoute
   '/reception/': typeof AuthenticatedReceptionIndexRoute
   '/studio/': typeof AuthenticatedStudioIndexRoute
+  '/agency/clients/$id': typeof AuthenticatedAgencyClientsIdRoute
   '/agency/projects/$id': typeof AuthenticatedAgencyProjectsIdRoute
   '/production/task/$id': typeof AuthenticatedProductionTaskIdRoute
   '/reception/clients/$id': typeof AuthenticatedReceptionClientsIdRoute
@@ -442,7 +450,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedHubReportsRoute
   '/users': typeof AuthenticatedHubUsersRoute
   '/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
-  '/agency/clients': typeof AuthenticatedAgencyClientsRoute
+  '/agency/clients': typeof AuthenticatedAgencyClientsRouteWithChildren
   '/agency/design': typeof AuthenticatedAgencyDesignRoute
   '/agency/montage': typeof AuthenticatedAgencyMontageRoute
   '/agency/photography': typeof AuthenticatedAgencyPhotographyRoute
@@ -476,6 +484,7 @@ export interface FileRoutesByTo {
   '/production': typeof AuthenticatedProductionIndexRoute
   '/reception': typeof AuthenticatedReceptionIndexRoute
   '/studio': typeof AuthenticatedStudioIndexRoute
+  '/agency/clients/$id': typeof AuthenticatedAgencyClientsIdRoute
   '/agency/projects/$id': typeof AuthenticatedAgencyProjectsIdRoute
   '/production/task/$id': typeof AuthenticatedProductionTaskIdRoute
   '/reception/clients/$id': typeof AuthenticatedReceptionClientsIdRoute
@@ -499,7 +508,7 @@ export interface FileRoutesById {
   '/_authenticated/_hub/reports': typeof AuthenticatedHubReportsRoute
   '/_authenticated/_hub/users': typeof AuthenticatedHubUsersRoute
   '/_authenticated/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
-  '/_authenticated/agency/clients': typeof AuthenticatedAgencyClientsRoute
+  '/_authenticated/agency/clients': typeof AuthenticatedAgencyClientsRouteWithChildren
   '/_authenticated/agency/design': typeof AuthenticatedAgencyDesignRoute
   '/_authenticated/agency/montage': typeof AuthenticatedAgencyMontageRoute
   '/_authenticated/agency/photography': typeof AuthenticatedAgencyPhotographyRoute
@@ -533,6 +542,7 @@ export interface FileRoutesById {
   '/_authenticated/production/': typeof AuthenticatedProductionIndexRoute
   '/_authenticated/reception/': typeof AuthenticatedReceptionIndexRoute
   '/_authenticated/studio/': typeof AuthenticatedStudioIndexRoute
+  '/_authenticated/agency/clients/$id': typeof AuthenticatedAgencyClientsIdRoute
   '/_authenticated/agency/projects/$id': typeof AuthenticatedAgencyProjectsIdRoute
   '/_authenticated/production/task/$id': typeof AuthenticatedProductionTaskIdRoute
   '/_authenticated/reception/clients/$id': typeof AuthenticatedReceptionClientsIdRoute
@@ -589,6 +599,7 @@ export interface FileRouteTypes {
     | '/production/'
     | '/reception/'
     | '/studio/'
+    | '/agency/clients/$id'
     | '/agency/projects/$id'
     | '/production/task/$id'
     | '/reception/clients/$id'
@@ -639,6 +650,7 @@ export interface FileRouteTypes {
     | '/production'
     | '/reception'
     | '/studio'
+    | '/agency/clients/$id'
     | '/agency/projects/$id'
     | '/production/task/$id'
     | '/reception/clients/$id'
@@ -695,6 +707,7 @@ export interface FileRouteTypes {
     | '/_authenticated/production/'
     | '/_authenticated/reception/'
     | '/_authenticated/studio/'
+    | '/_authenticated/agency/clients/$id'
     | '/_authenticated/agency/projects/$id'
     | '/_authenticated/production/task/$id'
     | '/_authenticated/reception/clients/$id'
@@ -1086,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgencyProjectsIdRouteImport
       parentRoute: typeof AuthenticatedAgencyProjectsRoute
     }
+    '/_authenticated/agency/clients/$id': {
+      id: '/_authenticated/agency/clients/$id'
+      path: '/$id'
+      fullPath: '/agency/clients/$id'
+      preLoaderRoute: typeof AuthenticatedAgencyClientsIdRouteImport
+      parentRoute: typeof AuthenticatedAgencyClientsRoute
+    }
   }
 }
 
@@ -1114,6 +1134,20 @@ const AuthenticatedHubRouteRouteWithChildren =
     AuthenticatedHubRouteRouteChildren,
   )
 
+interface AuthenticatedAgencyClientsRouteChildren {
+  AuthenticatedAgencyClientsIdRoute: typeof AuthenticatedAgencyClientsIdRoute
+}
+
+const AuthenticatedAgencyClientsRouteChildren: AuthenticatedAgencyClientsRouteChildren =
+  {
+    AuthenticatedAgencyClientsIdRoute: AuthenticatedAgencyClientsIdRoute,
+  }
+
+const AuthenticatedAgencyClientsRouteWithChildren =
+  AuthenticatedAgencyClientsRoute._addFileChildren(
+    AuthenticatedAgencyClientsRouteChildren,
+  )
+
 interface AuthenticatedAgencyProjectsRouteChildren {
   AuthenticatedAgencyProjectsIdRoute: typeof AuthenticatedAgencyProjectsIdRoute
 }
@@ -1130,7 +1164,7 @@ const AuthenticatedAgencyProjectsRouteWithChildren =
 
 interface AuthenticatedAgencyRouteRouteChildren {
   AuthenticatedAgencyAccountsRoute: typeof AuthenticatedAgencyAccountsRoute
-  AuthenticatedAgencyClientsRoute: typeof AuthenticatedAgencyClientsRoute
+  AuthenticatedAgencyClientsRoute: typeof AuthenticatedAgencyClientsRouteWithChildren
   AuthenticatedAgencyDesignRoute: typeof AuthenticatedAgencyDesignRoute
   AuthenticatedAgencyMontageRoute: typeof AuthenticatedAgencyMontageRoute
   AuthenticatedAgencyPhotographyRoute: typeof AuthenticatedAgencyPhotographyRoute
@@ -1143,7 +1177,8 @@ interface AuthenticatedAgencyRouteRouteChildren {
 const AuthenticatedAgencyRouteRouteChildren: AuthenticatedAgencyRouteRouteChildren =
   {
     AuthenticatedAgencyAccountsRoute: AuthenticatedAgencyAccountsRoute,
-    AuthenticatedAgencyClientsRoute: AuthenticatedAgencyClientsRoute,
+    AuthenticatedAgencyClientsRoute:
+      AuthenticatedAgencyClientsRouteWithChildren,
     AuthenticatedAgencyDesignRoute: AuthenticatedAgencyDesignRoute,
     AuthenticatedAgencyMontageRoute: AuthenticatedAgencyMontageRoute,
     AuthenticatedAgencyPhotographyRoute: AuthenticatedAgencyPhotographyRoute,
