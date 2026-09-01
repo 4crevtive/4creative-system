@@ -12,6 +12,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Camera, Smartphone, ChevronRight, ChevronLeft, Clock, Trash2, Search, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { addMinutes, addDays, format, startOfDay, endOfDay, startOfWeek, isSameDay, differenceInMinutes } from "date-fns";
 import { ar } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -337,14 +347,15 @@ function BookingChip({
   onChanged: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const start = new Date(booking.starts_at);
   const end = new Date(booking.ends_at);
 
   async function del() {
-    if (!confirm("حذف هذا الحجز؟")) return;
     const { error } = await supabase.from("bookings").delete().eq("id", booking.id);
     if (error) { toast.error(error.message); return; }
     toast.success("تم حذف الحجز");
+    setConfirmOpen(false);
     setOpen(false);
     onChanged();
   }
@@ -393,9 +404,21 @@ function BookingChip({
           </div>
           {booking.notes && <div className="text-xs text-muted-foreground border-t pt-2">{booking.notes}</div>}
           <div className="flex justify-end pt-1">
-            <Button variant="ghost" size="sm" onClick={del} className="text-destructive">
+            <Button variant="ghost" size="sm" onClick={() => setConfirmOpen(true)} className="text-destructive">
               <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
             </Button>
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+              <AlertDialogContent dir="rtl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>حذف هذا الحجز؟</AlertDialogTitle>
+                  <AlertDialogDescription>لا يمكن التراجع عن هذا الإجراء.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                  <AlertDialogAction onClick={del} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">حذف</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </PopoverContent>
