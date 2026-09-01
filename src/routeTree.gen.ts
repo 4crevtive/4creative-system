@@ -55,6 +55,7 @@ import { Route as AuthenticatedAgencyClientsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAgencyAccountsRouteImport } from './routes/_authenticated/agency/accounts'
 import { Route as AuthenticatedHubUsersRouteImport } from './routes/_authenticated/_hub/users'
 import { Route as AuthenticatedHubReportsRouteImport } from './routes/_authenticated/_hub/reports'
+import { Route as AuthenticatedHubPackagesRouteImport } from './routes/_authenticated/_hub/packages'
 import { Route as AuthenticatedHubMyTasksRouteImport } from './routes/_authenticated/_hub/my-tasks'
 import { Route as AuthenticatedHubHrRouteImport } from './routes/_authenticated/_hub/hr'
 import { Route as AuthenticatedHubFreelancersRouteImport } from './routes/_authenticated/_hub/freelancers'
@@ -330,6 +331,12 @@ const AuthenticatedHubReportsRoute = AuthenticatedHubReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedHubRouteRoute,
 } as any)
+const AuthenticatedHubPackagesRoute =
+  AuthenticatedHubPackagesRouteImport.update({
+    id: '/packages',
+    path: '/packages',
+    getParentRoute: () => AuthenticatedHubRouteRoute,
+  } as any)
 const AuthenticatedHubMyTasksRoute = AuthenticatedHubMyTasksRouteImport.update({
   id: '/my-tasks',
   path: '/my-tasks',
@@ -396,6 +403,7 @@ export interface FileRoutesByFullPath {
   '/freelancers': typeof AuthenticatedHubFreelancersRoute
   '/hr': typeof AuthenticatedHubHrRoute
   '/my-tasks': typeof AuthenticatedHubMyTasksRoute
+  '/packages': typeof AuthenticatedHubPackagesRoute
   '/reports': typeof AuthenticatedHubReportsRoute
   '/users': typeof AuthenticatedHubUsersRoute
   '/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
@@ -447,6 +455,7 @@ export interface FileRoutesByTo {
   '/freelancers': typeof AuthenticatedHubFreelancersRoute
   '/hr': typeof AuthenticatedHubHrRoute
   '/my-tasks': typeof AuthenticatedHubMyTasksRoute
+  '/packages': typeof AuthenticatedHubPackagesRoute
   '/reports': typeof AuthenticatedHubReportsRoute
   '/users': typeof AuthenticatedHubUsersRoute
   '/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
@@ -505,6 +514,7 @@ export interface FileRoutesById {
   '/_authenticated/_hub/freelancers': typeof AuthenticatedHubFreelancersRoute
   '/_authenticated/_hub/hr': typeof AuthenticatedHubHrRoute
   '/_authenticated/_hub/my-tasks': typeof AuthenticatedHubMyTasksRoute
+  '/_authenticated/_hub/packages': typeof AuthenticatedHubPackagesRoute
   '/_authenticated/_hub/reports': typeof AuthenticatedHubReportsRoute
   '/_authenticated/_hub/users': typeof AuthenticatedHubUsersRoute
   '/_authenticated/agency/accounts': typeof AuthenticatedAgencyAccountsRoute
@@ -562,6 +572,7 @@ export interface FileRouteTypes {
     | '/freelancers'
     | '/hr'
     | '/my-tasks'
+    | '/packages'
     | '/reports'
     | '/users'
     | '/agency/accounts'
@@ -613,6 +624,7 @@ export interface FileRouteTypes {
     | '/freelancers'
     | '/hr'
     | '/my-tasks'
+    | '/packages'
     | '/reports'
     | '/users'
     | '/agency/accounts'
@@ -670,6 +682,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_hub/freelancers'
     | '/_authenticated/_hub/hr'
     | '/_authenticated/_hub/my-tasks'
+    | '/_authenticated/_hub/packages'
     | '/_authenticated/_hub/reports'
     | '/_authenticated/_hub/users'
     | '/_authenticated/agency/accounts'
@@ -1043,6 +1056,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHubReportsRouteImport
       parentRoute: typeof AuthenticatedHubRouteRoute
     }
+    '/_authenticated/_hub/packages': {
+      id: '/_authenticated/_hub/packages'
+      path: '/packages'
+      fullPath: '/packages'
+      preLoaderRoute: typeof AuthenticatedHubPackagesRouteImport
+      parentRoute: typeof AuthenticatedHubRouteRoute
+    }
     '/_authenticated/_hub/my-tasks': {
       id: '/_authenticated/_hub/my-tasks'
       path: '/my-tasks'
@@ -1115,6 +1135,7 @@ interface AuthenticatedHubRouteRouteChildren {
   AuthenticatedHubFreelancersRoute: typeof AuthenticatedHubFreelancersRoute
   AuthenticatedHubHrRoute: typeof AuthenticatedHubHrRoute
   AuthenticatedHubMyTasksRoute: typeof AuthenticatedHubMyTasksRoute
+  AuthenticatedHubPackagesRoute: typeof AuthenticatedHubPackagesRoute
   AuthenticatedHubReportsRoute: typeof AuthenticatedHubReportsRoute
   AuthenticatedHubUsersRoute: typeof AuthenticatedHubUsersRoute
 }
@@ -1125,6 +1146,7 @@ const AuthenticatedHubRouteRouteChildren: AuthenticatedHubRouteRouteChildren = {
   AuthenticatedHubFreelancersRoute: AuthenticatedHubFreelancersRoute,
   AuthenticatedHubHrRoute: AuthenticatedHubHrRoute,
   AuthenticatedHubMyTasksRoute: AuthenticatedHubMyTasksRoute,
+  AuthenticatedHubPackagesRoute: AuthenticatedHubPackagesRoute,
   AuthenticatedHubReportsRoute: AuthenticatedHubReportsRoute,
   AuthenticatedHubUsersRoute: AuthenticatedHubUsersRoute,
 }

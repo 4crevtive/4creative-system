@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { Home, LayoutDashboard, UserCog, ShieldCheck, BarChart3, ListTodo, Activity, History, Shield, UserCheck, Wallet, Briefcase, User } from "lucide-react";
+import { Home, LayoutDashboard, UserCog, ShieldCheck, BarChart3, ListTodo, Activity, History, Shield, UserCheck, Wallet, Briefcase, User, Package } from "lucide-react";
 import { AreaGate } from "@/components/area-gate";
 import { assertAreaAccess } from "@/lib/access.functions";
 
