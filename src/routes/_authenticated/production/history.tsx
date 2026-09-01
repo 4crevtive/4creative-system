@@ -86,7 +86,7 @@ function HistoryPage() {
                       ) : t.status === "rejected" ? (
                         <Badge variant="destructive" className="text-xs"><XCircle className="h-3 w-3 ml-0.5" /> مرفوض</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-xs">{t.status}</Badge>
+                        <Badge variant="outline" className="text-xs">{statusLabels[t.status] ?? t.status}</Badge>
                       )}
                     </td>
                   </tr>
