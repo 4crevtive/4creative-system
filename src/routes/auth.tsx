@@ -33,6 +33,17 @@ const USERNAME_DOMAIN = "4creative.local";
 
 function AuthPage() {
   const navigate = useNavigate();
+  // Until React hydrates, a click on the submit button triggers a native form
+  // GET submission that reloads the page and clears the fields (forcing the
+  // user to type credentials twice). Gate submission on hydration.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+    // Clean credentials leaked into the URL by any earlier native submit.
+    if (window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
