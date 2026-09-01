@@ -149,8 +149,11 @@ function RootComponent() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      // The auth page owns navigation after SIGNED_IN. Invalidating the router
+      // here remounts that form while it is still resolving the user's role,
+      // which makes a successful first attempt look like it failed.
+      if (event !== "SIGNED_IN") router.invalidate();
+      if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
     });
     return () => subscription.unsubscribe();
   }, [queryClient, router]);
