@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { AreaGate } from "@/components/area-gate";
-import { LayoutDashboard, Calendar, Users, Wallet, Package, ConciergeBell } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, Wallet, Package, ConciergeBell, ListTodo } from "lucide-react";
 import { assertAreaAccess } from "@/lib/access.functions";
 
 const receptionNav = [
@@ -10,6 +10,7 @@ const receptionNav = [
   { to: "/reception/crm", label: "العملاء", icon: Users },
   { to: "/reception/cashier", label: "الكاشير", icon: Wallet },
   { to: "/reception/packages", label: "الباقات والأسعار", icon: Package },
+  { to: "/reception/tasks", label: "تاسكاتي", icon: ListTodo },
 ];
 
 export const Route = createFileRoute("/_authenticated/reception")({
