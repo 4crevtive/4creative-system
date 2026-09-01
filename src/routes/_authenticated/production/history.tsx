@@ -14,6 +14,11 @@ export const Route = createFileRoute("/_authenticated/production/history")({
   component: HistoryPage,
 });
 
+const statusLabels: Record<string, string> = {
+  submitted: "مُرسل", uploaded: "تم الرفع", completed: "مكتمل",
+  approved: "معتمد", rejected: "مرفوض", archived: "مؤرشف",
+};
+
 function HistoryPage() {
   const [uid, setUid] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -25,8 +30,7 @@ function HistoryPage() {
     queryFn: async () => (await supabase.from("tasks")
       .select("*, contact:contacts(full_name)")
       .eq("assignee_id", uid!)
-      .in("status", ["approved", "rejected", "archived"])
-      .order("approved_at", { ascending: false, nullsFirst: false })
+      .in("status", ["submitted", "uploaded", "completed", "approved", "rejected", "archived"])
       .order("updated_at", { ascending: false })
       .limit(200)).data ?? [],
   });
@@ -87,7 +91,7 @@ function HistoryPage() {
                       ) : t.status === "rejected" ? (
                         <Badge variant="destructive" className="text-xs"><XCircle className="h-3 w-3 ml-0.5" /> مرفوض</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-xs">{t.status}</Badge>
+                        <Badge variant="outline" className="text-xs">{statusLabels[t.status] ?? t.status}</Badge>
                       )}
                     </td>
                   </tr>
