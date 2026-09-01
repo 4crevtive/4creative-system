@@ -151,7 +151,7 @@ export function ContactsView({ title = "العملاء والمدرسين", subt
   );
 }
 
-function ContactCard({ contact, stats }: { contact: Contact; stats?: { total: number; upcoming: number } }) {
+function ContactCard({ contact, stats, onChanged }: { contact: Contact; stats?: { total: number; upcoming: number }; onChanged: () => void }) {
   const Icon = contact.type === "teacher" ? GraduationCap : contact.type === "reel_client" ? Film : Briefcase;
   const cover = useContactImage(contact.cover_url);
   const avatar = useContactImage(contact.avatar_url);
