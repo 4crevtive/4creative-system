@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cashMovementSchema, validateForm } from "@/lib/validation";
+import { MovementActions, type CashMovement } from "@/components/reception/movement-actions";
 
 export type CompanyCode = "studio" | "agency";
 
