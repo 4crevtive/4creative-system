@@ -14,6 +14,11 @@ export const Route = createFileRoute("/_authenticated/production/history")({
   component: HistoryPage,
 });
 
+const statusLabels: Record<string, string> = {
+  submitted: "مُرسل", uploaded: "تم الرفع", completed: "مكتمل",
+  approved: "معتمد", rejected: "مرفوض", archived: "مؤرشف",
+};
+
 function HistoryPage() {
   const [uid, setUid] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
