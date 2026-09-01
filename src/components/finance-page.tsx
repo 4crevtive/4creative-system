@@ -282,6 +282,10 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
                 <div className={`font-bold tabular-nums ${m.direction === "in" ? "text-emerald-700" : "text-rose-700"}`}>
                   {m.direction === "in" ? "+" : "−"} {Number(m.amount).toLocaleString()} ج
                 </div>
+                <MovementActions
+                  movement={m as unknown as CashMovement}
+                  onChanged={() => qc.invalidateQueries({ queryKey: ["movements"] })}
+                />
               </div>
             ))}
           </div>
