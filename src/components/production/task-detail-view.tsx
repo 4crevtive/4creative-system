@@ -219,7 +219,10 @@ export function TaskDetailView({ id, initialTask }: { id: string; initialTask?: 
     return () => { void supabase.removeChannel(channel); };
   }, [id, qc]);
 
+  const [editOpen, setEditOpen] = useState(false);
+
   if (isLoading && !cachedTask) {
+
     return (
       <div className="space-y-4" dir="rtl">
         <div className="h-8 w-2/3 bg-muted/60 rounded animate-pulse" />
@@ -252,7 +255,7 @@ export function TaskDetailView({ id, initialTask }: { id: string; initialTask?: 
   const canEdit = isAdmin || uid === task.created_by;
   const Icon = typeIcon(task.type);
   const overdue = task.due_at && new Date(task.due_at) < new Date() && !["approved", "completed", "archived"].includes(task.status);
-  const [editOpen, setEditOpen] = useState(false);
+
 
   return (
     <div className="space-y-6" dir="rtl">
