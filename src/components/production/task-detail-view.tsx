@@ -10,6 +10,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Clock, Calendar, Film, Image as ImageIcon, Camera, PlayCircle, CheckCircle2, Building2, MapPin,
   Send, Eye, AlertCircle, Upload, FileText, Trash2, Download, MessageCircle, History as HistoryIcon, Link2, User, Undo2, AtSign,
 } from "lucide-react";
@@ -443,10 +447,25 @@ function WorkflowButtons({ task, isAdmin, isAssignee, onChanged }: { task: FullT
   const prev = PREV[task.status];
   if (prev && (isAssignee || isAdmin) && task.status !== "approved" && task.status !== "completed") {
     buttons.push(
-      <Button key="revert" size="sm" variant="ghost" disabled={busy}
-        onClick={() => { if (confirm("هل تريد التراجع خطوة للوراء؟")) act(prev.to, prev.clear); }}>
-        <Undo2 className="h-3.5 w-3.5 ml-1" /> تراجع خطوة
-      </Button>,
+      <AlertDialog key="revert">
+        <AlertDialogTrigger asChild>
+          <Button size="sm" variant="ghost" disabled={busy}>
+            <Undo2 className="h-3.5 w-3.5 ml-1" /> تراجع خطوة
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>التراجع خطوة للوراء؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم إرجاع حالة التاسك إلى «{STATUS_AR[prev.to] ?? prev.to}».
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={() => act(prev.to, prev.clear)}>تأكيد</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>,
     );
   }
 
