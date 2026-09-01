@@ -17,7 +17,9 @@ const hubNav = [
   { to: "/production/performance", label: "أداء الفريق", icon: Shield },
   { to: "/reports", label: "التقارير والتحليلات", icon: BarChart3 },
   { to: "/users", label: "إدارة المستخدمين", icon: ShieldCheck },
+  { to: "/activity", label: "سجل النشاط", icon: Activity },
   { to: "/me", label: "بروفايلي", icon: User },
+
 ];
 
 export const Route = createFileRoute("/_authenticated/_hub")({
