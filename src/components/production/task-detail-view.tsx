@@ -10,6 +10,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Clock, Calendar, Film, Image as ImageIcon, Camera, PlayCircle, CheckCircle2, Building2, MapPin,
   Send, Eye, AlertCircle, Upload, FileText, Trash2, Download, MessageCircle, History as HistoryIcon, Link2, User, Undo2, AtSign,
 } from "lucide-react";
