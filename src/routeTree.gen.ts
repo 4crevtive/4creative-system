@@ -32,6 +32,7 @@ import { Route as AuthenticatedStudioDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedStudioCrmRouteImport } from './routes/_authenticated/studio/crm'
 import { Route as AuthenticatedStudioBookingsRouteImport } from './routes/_authenticated/studio/bookings'
 import { Route as AuthenticatedStudioAccountsRouteImport } from './routes/_authenticated/studio/accounts'
+import { Route as AuthenticatedReceptionTasksRouteImport } from './routes/_authenticated/reception/tasks'
 import { Route as AuthenticatedReceptionPackagesRouteImport } from './routes/_authenticated/reception/packages'
 import { Route as AuthenticatedReceptionCrmRouteImport } from './routes/_authenticated/reception/crm'
 import { Route as AuthenticatedReceptionCashierRouteImport } from './routes/_authenticated/reception/cashier'
@@ -195,6 +196,12 @@ const AuthenticatedStudioAccountsRoute =
     id: '/accounts',
     path: '/accounts',
     getParentRoute: () => AuthenticatedStudioRouteRoute,
+  } as any)
+const AuthenticatedReceptionTasksRoute =
+  AuthenticatedReceptionTasksRouteImport.update({
+    id: '/tasks',
+    path: '/tasks',
+    getParentRoute: () => AuthenticatedReceptionRouteRoute,
   } as any)
 const AuthenticatedReceptionPackagesRoute =
   AuthenticatedReceptionPackagesRouteImport.update({
@@ -435,6 +442,7 @@ export interface FileRoutesByFullPath {
   '/reception/cashier': typeof AuthenticatedReceptionCashierRoute
   '/reception/crm': typeof AuthenticatedReceptionCrmRoute
   '/reception/packages': typeof AuthenticatedReceptionPackagesRoute
+  '/reception/tasks': typeof AuthenticatedReceptionTasksRoute
   '/studio/accounts': typeof AuthenticatedStudioAccountsRoute
   '/studio/bookings': typeof AuthenticatedStudioBookingsRoute
   '/studio/crm': typeof AuthenticatedStudioCrmRoute
@@ -488,6 +496,7 @@ export interface FileRoutesByTo {
   '/reception/cashier': typeof AuthenticatedReceptionCashierRoute
   '/reception/crm': typeof AuthenticatedReceptionCrmRoute
   '/reception/packages': typeof AuthenticatedReceptionPackagesRoute
+  '/reception/tasks': typeof AuthenticatedReceptionTasksRoute
   '/studio/accounts': typeof AuthenticatedStudioAccountsRoute
   '/studio/bookings': typeof AuthenticatedStudioBookingsRoute
   '/studio/crm': typeof AuthenticatedStudioCrmRoute
@@ -548,6 +557,7 @@ export interface FileRoutesById {
   '/_authenticated/reception/cashier': typeof AuthenticatedReceptionCashierRoute
   '/_authenticated/reception/crm': typeof AuthenticatedReceptionCrmRoute
   '/_authenticated/reception/packages': typeof AuthenticatedReceptionPackagesRoute
+  '/_authenticated/reception/tasks': typeof AuthenticatedReceptionTasksRoute
   '/_authenticated/studio/accounts': typeof AuthenticatedStudioAccountsRoute
   '/_authenticated/studio/bookings': typeof AuthenticatedStudioBookingsRoute
   '/_authenticated/studio/crm': typeof AuthenticatedStudioCrmRoute
@@ -607,6 +617,7 @@ export interface FileRouteTypes {
     | '/reception/cashier'
     | '/reception/crm'
     | '/reception/packages'
+    | '/reception/tasks'
     | '/studio/accounts'
     | '/studio/bookings'
     | '/studio/crm'
@@ -660,6 +671,7 @@ export interface FileRouteTypes {
     | '/reception/cashier'
     | '/reception/crm'
     | '/reception/packages'
+    | '/reception/tasks'
     | '/studio/accounts'
     | '/studio/bookings'
     | '/studio/crm'
@@ -719,6 +731,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reception/cashier'
     | '/_authenticated/reception/crm'
     | '/_authenticated/reception/packages'
+    | '/_authenticated/reception/tasks'
     | '/_authenticated/studio/accounts'
     | '/_authenticated/studio/bookings'
     | '/_authenticated/studio/crm'
@@ -907,6 +920,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/studio/accounts'
       preLoaderRoute: typeof AuthenticatedStudioAccountsRouteImport
       parentRoute: typeof AuthenticatedStudioRouteRoute
+    }
+    '/_authenticated/reception/tasks': {
+      id: '/_authenticated/reception/tasks'
+      path: '/tasks'
+      fullPath: '/reception/tasks'
+      preLoaderRoute: typeof AuthenticatedReceptionTasksRouteImport
+      parentRoute: typeof AuthenticatedReceptionRouteRoute
     }
     '/_authenticated/reception/packages': {
       id: '/_authenticated/reception/packages'
@@ -1276,6 +1296,7 @@ interface AuthenticatedReceptionRouteRouteChildren {
   AuthenticatedReceptionCashierRoute: typeof AuthenticatedReceptionCashierRoute
   AuthenticatedReceptionCrmRoute: typeof AuthenticatedReceptionCrmRoute
   AuthenticatedReceptionPackagesRoute: typeof AuthenticatedReceptionPackagesRoute
+  AuthenticatedReceptionTasksRoute: typeof AuthenticatedReceptionTasksRoute
   AuthenticatedReceptionIndexRoute: typeof AuthenticatedReceptionIndexRoute
   AuthenticatedReceptionClientsIdRoute: typeof AuthenticatedReceptionClientsIdRoute
 }
@@ -1286,6 +1307,7 @@ const AuthenticatedReceptionRouteRouteChildren: AuthenticatedReceptionRouteRoute
     AuthenticatedReceptionCashierRoute: AuthenticatedReceptionCashierRoute,
     AuthenticatedReceptionCrmRoute: AuthenticatedReceptionCrmRoute,
     AuthenticatedReceptionPackagesRoute: AuthenticatedReceptionPackagesRoute,
+    AuthenticatedReceptionTasksRoute: AuthenticatedReceptionTasksRoute,
     AuthenticatedReceptionIndexRoute: AuthenticatedReceptionIndexRoute,
     AuthenticatedReceptionClientsIdRoute: AuthenticatedReceptionClientsIdRoute,
   }
