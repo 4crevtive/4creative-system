@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cashMovementSchema, validateForm } from "@/lib/validation";
+import { MovementActions, type CashMovement } from "@/components/reception/movement-actions";
 
 export type CompanyCode = "studio" | "agency";
 
@@ -282,6 +283,10 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
                 <div className={`font-bold tabular-nums ${m.direction === "in" ? "text-emerald-700" : "text-rose-700"}`}>
                   {m.direction === "in" ? "+" : "−"} {Number(m.amount).toLocaleString()} ج
                 </div>
+                <MovementActions
+                  movement={m as unknown as CashMovement}
+                  onChanged={() => qc.invalidateQueries({ queryKey: ["movements"] })}
+                />
               </div>
             ))}
           </div>

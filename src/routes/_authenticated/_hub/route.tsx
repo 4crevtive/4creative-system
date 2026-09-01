@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { Home, LayoutDashboard, UserCog, ShieldCheck, BarChart3, ListTodo, Activity, History, Shield, UserCheck, Wallet, Briefcase, User } from "lucide-react";
+import { Home, LayoutDashboard, UserCog, ShieldCheck, BarChart3, ListTodo, Activity, History, Shield, UserCheck, Wallet, Briefcase, User, Package } from "lucide-react";
 import { AreaGate } from "@/components/area-gate";
 import { assertAreaAccess } from "@/lib/access.functions";
 
@@ -10,6 +10,7 @@ const hubNav = [
   { to: "/hr", label: "الحضور والموظفين", icon: UserCog },
   { to: "/freelancers", label: "الفريلانسرز", icon: Briefcase },
   { to: "/accounts", label: "الحسابات الشاملة", icon: Wallet },
+  { to: "/packages", label: "الباقات والأسعار", icon: Package },
   { to: "/production/admin", label: "إدارة المهام", icon: ListTodo },
   { to: "/production/monitor", label: "المتابعة المباشرة", icon: Activity },
   { to: "/production/history", label: "سجل المهام", icon: History },

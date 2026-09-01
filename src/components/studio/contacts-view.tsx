@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { contactSchema, validateForm } from "@/lib/validation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useContactImage } from "@/components/contact-image";
+import { ContactQuickActions } from "@/components/studio/contact-actions";
 
 type Contact = {
   id: string; full_name: string; type: string;
@@ -134,14 +135,24 @@ export function ContactsView({ title = "العملاء والمدرسين", subt
         <Card className="p-12 text-center text-muted-foreground">لا يوجد عملاء بعد. أضف أول عميل لبدء بناء قاعدة بياناتك.</Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => <ContactCard key={c.id} contact={c} stats={bookingMap.get(c.id)} />)}
+          {filtered.map((c) => (
+            <ContactCard
+              key={c.id}
+              contact={c}
+              stats={bookingMap.get(c.id)}
+              onChanged={() => {
+                qc.invalidateQueries({ queryKey: ["contacts"] });
+                qc.invalidateQueries({ queryKey: ["contacts-bookings-agg"] });
+              }}
+            />
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-function ContactCard({ contact, stats }: { contact: Contact; stats?: { total: number; upcoming: number } }) {
+function ContactCard({ contact, stats, onChanged }: { contact: Contact; stats?: { total: number; upcoming: number }; onChanged: () => void }) {
   const Icon = contact.type === "teacher" ? GraduationCap : contact.type === "reel_client" ? Film : Briefcase;
   const cover = useContactImage(contact.cover_url);
   const avatar = useContactImage(contact.avatar_url);
@@ -176,6 +187,7 @@ function ContactCard({ contact, stats }: { contact: Contact; stats?: { total: nu
               {contact.priority_level}
             </Badge>
           )}
+          <ContactQuickActions contact={contact} onChanged={onChanged} />
         </div>
 
         <div className="px-4 pb-4 -mt-8 flex-1 flex flex-col">

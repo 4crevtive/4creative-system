@@ -929,6 +929,51 @@ export type Database = {
           },
         ]
       }
+      package_offerings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          features: string[]
+          hours: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: string[]
+          hours?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          features?: string[]
+          hours?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1519,6 +1564,7 @@ export type Database = {
           name: string
           next_collection_date: string | null
           notes: string | null
+          offering_id: string | null
           paid_amount: number
           total_amount: number
           total_hours: number
@@ -1533,6 +1579,7 @@ export type Database = {
           name: string
           next_collection_date?: string | null
           notes?: string | null
+          offering_id?: string | null
           paid_amount?: number
           total_amount?: number
           total_hours?: number
@@ -1547,6 +1594,7 @@ export type Database = {
           name?: string
           next_collection_date?: string | null
           notes?: string | null
+          offering_id?: string | null
           paid_amount?: number
           total_amount?: number
           total_hours?: number
@@ -1559,6 +1607,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_packages_offering_id_fkey"
+            columns: ["offering_id"]
+            isOneToOne: false
+            referencedRelation: "package_offerings"
             referencedColumns: ["id"]
           },
         ]
