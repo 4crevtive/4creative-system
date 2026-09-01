@@ -2099,6 +2099,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      _priority_label: { Args: { _p: number }; Returns: string }
       can_access_task: {
         Args: { _task_id: string; _user_id: string }
         Returns: boolean
