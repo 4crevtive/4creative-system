@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { contactSchema, validateForm } from "@/lib/validation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useContactImage } from "@/components/contact-image";
+import { ContactQuickActions } from "@/components/studio/contact-actions";
 
 type Contact = {
   id: string; full_name: string; type: string;
