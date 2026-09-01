@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +34,17 @@ const USERNAME_DOMAIN = "4creative.local";
 
 function AuthPage() {
   const navigate = useNavigate();
+  // Until React hydrates, a click on the submit button triggers a native form
+  // GET submission that reloads the page and clears the fields (forcing the
+  // user to type credentials twice). Gate submission on hydration.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+    // Clean credentials leaked into the URL by any earlier native submit.
+    if (window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -88,7 +100,14 @@ function AuthPage() {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!hydrated) return;
+              void form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="username"
@@ -125,7 +144,7 @@ function AuthPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+            <Button type="submit" className="w-full" disabled={!hydrated || form.formState.isSubmitting}>
               {form.formState.isSubmitting ? "جاري الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
