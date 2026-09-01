@@ -255,7 +255,7 @@ export function TaskDetailView({ id, initialTask }: { id: string; initialTask?: 
   const canEdit = isAdmin || uid === task.created_by;
   const Icon = typeIcon(task.type);
   const overdue = task.due_at && new Date(task.due_at) < new Date() && !["approved", "completed", "archived"].includes(task.status);
-  const [editOpen, setEditOpen] = useState(false);
+
 
   return (
     <div className="space-y-6" dir="rtl">
