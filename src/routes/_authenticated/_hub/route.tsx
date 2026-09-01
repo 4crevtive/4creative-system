@@ -10,6 +10,7 @@ const hubNav = [
   { to: "/hr", label: "الحضور والموظفين", icon: UserCog },
   { to: "/freelancers", label: "الفريلانسرز", icon: Briefcase },
   { to: "/accounts", label: "الحسابات الشاملة", icon: Wallet },
+  { to: "/packages", label: "الباقات والأسعار", icon: Package },
   { to: "/production/admin", label: "إدارة المهام", icon: ListTodo },
   { to: "/production/monitor", label: "المتابعة المباشرة", icon: Activity },
   { to: "/production/history", label: "سجل المهام", icon: History },
