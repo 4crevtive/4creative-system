@@ -64,7 +64,15 @@ export function ContactQuickActions({ contact, onChanged }: { contact: EditableC
     setBusy(true);
     const { error } = await supabase.from("contacts").delete().eq("id", contact.id);
     setBusy(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(
+        error.message.includes("foreign key")
+          ? "لا يمكن حذف العميل لوجود سجلات مالية مرتبطة به. حاول مرة أخرى أو تواصل مع الإدارة."
+          : error.message
+      );
+      return;
+    }
+
     toast.success("تم حذف العميل");
     setDelOpen(false);
     onChanged();
