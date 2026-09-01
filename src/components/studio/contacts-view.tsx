@@ -134,7 +134,17 @@ export function ContactsView({ title = "العملاء والمدرسين", subt
         <Card className="p-12 text-center text-muted-foreground">لا يوجد عملاء بعد. أضف أول عميل لبدء بناء قاعدة بياناتك.</Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c) => <ContactCard key={c.id} contact={c} stats={bookingMap.get(c.id)} />)}
+          {filtered.map((c) => (
+            <ContactCard
+              key={c.id}
+              contact={c}
+              stats={bookingMap.get(c.id)}
+              onChanged={() => {
+                qc.invalidateQueries({ queryKey: ["contacts"] });
+                qc.invalidateQueries({ queryKey: ["contacts-bookings-agg"] });
+              }}
+            />
+          ))}
         </div>
       )}
     </div>
