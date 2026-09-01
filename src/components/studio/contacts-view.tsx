@@ -186,6 +186,7 @@ function ContactCard({ contact, stats, onChanged }: { contact: Contact; stats?: 
               {contact.priority_level}
             </Badge>
           )}
+          <ContactQuickActions contact={contact} onChanged={onChanged} />
         </div>
 
         <div className="px-4 pb-4 -mt-8 flex-1 flex flex-col">
