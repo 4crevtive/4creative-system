@@ -25,8 +25,7 @@ function HistoryPage() {
     queryFn: async () => (await supabase.from("tasks")
       .select("*, contact:contacts(full_name)")
       .eq("assignee_id", uid!)
-      .in("status", ["approved", "rejected", "archived"])
-      .order("approved_at", { ascending: false, nullsFirst: false })
+      .in("status", ["submitted", "uploaded", "completed", "approved", "rejected", "archived"])
       .order("updated_at", { ascending: false })
       .limit(200)).data ?? [],
   });
