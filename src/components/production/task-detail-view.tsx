@@ -219,7 +219,10 @@ export function TaskDetailView({ id, initialTask }: { id: string; initialTask?: 
     return () => { void supabase.removeChannel(channel); };
   }, [id, qc]);
 
+  const [editOpen, setEditOpen] = useState(false);
+
   if (isLoading && !cachedTask) {
+
     return (
       <div className="space-y-4" dir="rtl">
         <div className="h-8 w-2/3 bg-muted/60 rounded animate-pulse" />
