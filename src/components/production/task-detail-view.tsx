@@ -443,10 +443,25 @@ function WorkflowButtons({ task, isAdmin, isAssignee, onChanged }: { task: FullT
   const prev = PREV[task.status];
   if (prev && (isAssignee || isAdmin) && task.status !== "approved" && task.status !== "completed") {
     buttons.push(
-      <Button key="revert" size="sm" variant="ghost" disabled={busy}
-        onClick={() => { if (confirm("هل تريد التراجع خطوة للوراء؟")) act(prev.to, prev.clear); }}>
-        <Undo2 className="h-3.5 w-3.5 ml-1" /> تراجع خطوة
-      </Button>,
+      <AlertDialog key="revert">
+        <AlertDialogTrigger asChild>
+          <Button size="sm" variant="ghost" disabled={busy}>
+            <Undo2 className="h-3.5 w-3.5 ml-1" /> تراجع خطوة
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>التراجع خطوة للوراء؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم إرجاع حالة التاسك إلى «{STATUS_AR[prev.to] ?? prev.to}».
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={() => act(prev.to, prev.clear)}>تأكيد</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>,
     );
   }
 
