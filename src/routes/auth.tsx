@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,8 +32,15 @@ export const Route = createFileRoute("/auth")({
 
 const USERNAME_DOMAIN = "4creative.local";
 
+function destinationForRoles(roles: string[]): string {
+  if (roles.some((role) => ["admin", "super_admin"].includes(role))) return "/dashboard";
+  if (roles.includes("reception")) return "/reception";
+  return "/production";
+}
+
 function AuthPage() {
   const navigate = useNavigate();
+  const navigatingRef = useRef(false);
   // Until React hydrates, a click on the submit button triggers a native form
   // GET submission that reloads the page and clears the fields (forcing the
   // user to type credentials twice). Gate submission on hydration.
@@ -51,6 +58,37 @@ function AuthPage() {
     defaultValues: { username: "", password: "" },
   });
 
+  async function goToUserArea(userId: string) {
+    if (navigatingRef.current) return;
+
+    const cacheKey = `4c-roles:${userId}`;
+    let destination = "/production";
+    const { data: roles, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    if (!rolesError) {
+      const roleNames = (roles ?? []).map((row: { role: string }) => row.role);
+      destination = destinationForRoles(roleNames);
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(roleNames));
+      } catch {
+        // Navigation must still work when storage is unavailable.
+      }
+    } else {
+      try {
+        const cachedRoles = localStorage.getItem(cacheKey);
+        if (cachedRoles) destination = destinationForRoles(JSON.parse(cachedRoles) as string[]);
+      } catch {
+        // Fall back to the production area.
+      }
+    }
+
+    navigatingRef.current = true;
+    await navigate({ to: destination, replace: true });
+  }
+
   async function onSubmit(values: LoginInput) {
     const email = `${values.username}@${USERNAME_DOMAIN}`;
     const { data: signIn, error } = await supabase.auth.signInWithPassword({ email, password: values.password });
@@ -58,33 +96,14 @@ function AuthPage() {
       toast.error("اسم المستخدم أو كلمة المرور غير صحيحة");
       return;
     }
-    const uid = signIn.user?.id;
-    const cacheKey = uid ? `4c-roles:${uid}` : null;
-    const decideDest = (list: string[]): string => {
-      if (list.some((r) => ["admin", "super_admin"].includes(r))) return "/dashboard";
-      if (list.includes("reception")) return "/reception";
-      if (["editor", "designer", "photographer"].some((r) => list.includes(r))) return "/production";
-      return "/production";
-    };
-    let dest = "/production";
-    if (uid) {
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles").select("role").eq("user_id", uid);
-      const list = (roles ?? []).map((r: { role: string }) => r.role);
-      if (!rolesError) {
-        dest = decideDest(list);
-        if (cacheKey) {
-          try { localStorage.setItem(cacheKey, JSON.stringify(list)); } catch { /* ignore */ }
-        }
-      } else if (cacheKey) {
-        try {
-          const cached = localStorage.getItem(cacheKey);
-          if (cached) dest = decideDest(JSON.parse(cached) as string[]);
-        } catch { /* ignore */ }
-      }
+    const userId = signIn.user?.id;
+    if (!userId) {
+      await supabase.auth.signOut();
+      toast.error("تعذّر إكمال تسجيل الدخول. حاول مرة أخرى");
+      return;
     }
     toast.success("مرحباً بك");
-    navigate({ to: dest, replace: true });
+    await goToUserArea(userId);
   }
 
   return (
