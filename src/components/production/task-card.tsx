@@ -4,10 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Clock, Calendar, CalendarClock, Film, Image, Camera, PlayCircle, CheckCircle2, Send, Eye, AlertCircle, ExternalLink, UserPlus, MapPin, BellRing } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Clock, Calendar, CalendarClock, Film, Image, Camera, PlayCircle, CheckCircle2, Send, Eye, AlertCircle, ExternalLink, UserPlus, MapPin, BellRing, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { TaskDetailView } from "@/components/production/task-detail-view";
+import { EditTaskDialog } from "@/components/production/edit-task-dialog";
+import { useCanManage } from "@/lib/use-can-manage";
+
 
 export type ProdTask = {
   id: string; title: string; description: string | null;
