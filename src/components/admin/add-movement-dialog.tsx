@@ -84,7 +84,9 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
       customCategory: initialCategory === "__other__" ? (movement?.category ?? "") : "",
       business_date: movement?.business_date ? new Date(`${movement.business_date}T00:00:00`) : new Date(),
       method: "كاش",
-      contact_id: movement?.contact_id ?? "",
+      contact_id: movement?.agency_client_id
+        ? `ag:${movement.agency_client_id}`
+        : (movement?.contact_id ?? ""),
       reference: "",
       description: movement?.description ?? "",
       notes: "",
