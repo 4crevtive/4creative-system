@@ -264,7 +264,20 @@ export function ConsolidatedFinance() {
               <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">كل العملاء</SelectItem>
-                {(contacts ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                {contacts?.length ? (
+                  <SelectGroup>
+                    <SelectLabel>عملاء الاستوديو</SelectLabel>
+                    {contacts.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                  </SelectGroup>
+                ) : null}
+                {agencyClients.length ? (
+                  <SelectGroup>
+                    <SelectLabel>عملاء الماركتنج</SelectLabel>
+                    {agencyClients.map((c) => (
+                      <SelectItem key={c.id} value={`ag:${c.id}`}>{c.name}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                ) : null}
               </SelectContent>
             </Select>
           </div>
