@@ -40,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/reception/packages")({
 
 type Offering = {
   id: string; name: string; description: string | null; image_url: string | null;
-  price: number; hours: number; features: string[]; is_active: boolean;
+  price: number; hours: number; features: string[]; tags?: string[]; is_active: boolean;
 };
 
 type ClientPackage = {
@@ -349,6 +349,11 @@ function CatalogCard({ offering, onUse }: { offering: Offering; onUse: () => voi
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        {(offering.tags ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {offering.tags!.map((t) => <Badge key={t} className="text-[10px]">{t}</Badge>)}
+          </div>
+        )}
         {offering.description && <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-4">{offering.description}</p>}
         <div className="flex items-center gap-3 text-sm">
           <span className="inline-flex items-center gap-1 tabular-nums"><BadgeDollarSign className="h-3.5 w-3.5" /> {Number(offering.price).toLocaleString()} ج</span>

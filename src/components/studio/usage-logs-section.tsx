@@ -72,7 +72,8 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
   const { data: packages = [] } = useQuery({
     queryKey: ["client-packages-lite", contactId],
     queryFn: async () => (await supabase.from("studio_packages")
-      .select("id, name, total_hours, used_hours").eq("contact_id", contactId)).data ?? [],
+      .select("id, name, total_hours, used_hours, is_active").eq("contact_id", contactId)
+      .order("created_at", { ascending: false })).data ?? [],
   });
 
   const totals = useMemo(() => logs.reduce((a, l) => ({
@@ -118,6 +119,7 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
       package_id: form.package_id || null,
       notes: form.notes.trim() || null,
     };
+    const hoursToCharge = payload.studio_hours + payload.screen_hours;
     const { error } = editing
       ? await supabase.from("studio_usage_logs").update(payload).eq("id", editing.id)
       : await supabase.from("studio_usage_logs").insert(payload);
@@ -125,7 +127,7 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
     // Charge the package hours when a package is linked (new records only).
     if (!error && !editing && payload.package_id) {
       const pkg = packages.find((p) => p.id === payload.package_id);
-      const hours = payload.studio_hours + payload.screen_hours;
+      const hours = hoursToCharge;
       if (pkg && hours > 0) {
         await supabase.from("studio_packages")
           .update({ used_hours: Number(pkg.used_hours || 0) + hours })
@@ -164,6 +166,22 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
         <Stat icon={Wallet} label="المستحق" value={money(totals.due)} tone="text-foreground" />
         <Stat icon={Wallet} label="المدفوع" value={money(totals.paid)} tone={totals.paid >= totals.due ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"} />
       </div>
+
+      {packages.length > 0 && (
+        <Card className="p-3">
+          <div className="text-xs text-muted-foreground mb-2">الباقات المشترك فيها</div>
+          <div className="flex flex-wrap gap-2">
+            {packages.map((p) => {
+              const remaining = Math.max(0, Number(p.total_hours || 0) - Number(p.used_hours || 0));
+              return (
+                <Badge key={p.id} variant={p.is_active === false ? "secondary" : "default"} className="gap-1">
+                  {p.name} — متبقي {remaining} من {Number(p.total_hours || 0)} ساعة
+                </Badge>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
@@ -259,11 +277,14 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
                 <SelectTrigger><SelectValue placeholder="بدون" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">بدون</SelectItem>
-                  {packages.map((p) => (
+                  {packages.filter((p) => p.is_active !== false).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name} — متبقي {Math.max(0, Number(p.total_hours) - Number(p.used_hours))} ساعة
                     </SelectItem>
                   ))}
+                  {packages.filter((p) => p.is_active !== false).length === 0 && (
+                    <div className="px-3 py-2 text-xs text-muted-foreground">العميل غير مشترك في أي باقة نشطة</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
