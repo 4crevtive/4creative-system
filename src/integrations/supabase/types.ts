@@ -1309,6 +1309,63 @@ export type Database = {
           },
         ]
       }
+      project_incomes: {
+        Row: {
+          amount: number
+          cash_movement_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          method: string | null
+          notes: string | null
+          project_id: string
+          received_at: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          cash_movement_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          project_id: string
+          received_at?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cash_movement_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          method?: string | null
+          notes?: string | null
+          project_id?: string
+          received_at?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_incomes_cash_movement_id_fkey"
+            columns: ["cash_movement_id"]
+            isOneToOne: false
+            referencedRelation: "cash_movements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_incomes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "agency_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_members: {
         Row: {
           agreed_amount: number
@@ -1662,6 +1719,85 @@ export type Database = {
             columns: ["offering_id"]
             isOneToOne: false
             referencedRelation: "package_offerings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_usage_logs: {
+        Row: {
+          amount_due: number
+          amount_paid: number
+          contact_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          package_id: string | null
+          photos_count: number
+          reels_count: number
+          room_id: string | null
+          screen_hours: number
+          studio_hours: number
+          updated_at: string
+          usage_date: string
+          videos_count: number
+        }
+        Insert: {
+          amount_due?: number
+          amount_paid?: number
+          contact_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          photos_count?: number
+          reels_count?: number
+          room_id?: string | null
+          screen_hours?: number
+          studio_hours?: number
+          updated_at?: string
+          usage_date?: string
+          videos_count?: number
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number
+          contact_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          package_id?: string | null
+          photos_count?: number
+          reels_count?: number
+          room_id?: string | null
+          screen_hours?: number
+          studio_hours?: number
+          updated_at?: string
+          usage_date?: string
+          videos_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_usage_logs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_usage_logs_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "studio_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "studio_usage_logs_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
         ]
