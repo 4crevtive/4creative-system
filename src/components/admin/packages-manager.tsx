@@ -25,13 +25,14 @@ export type Offering = {
   price: number;
   hours: number;
   features: string[];
+  tags: string[];
   sort_order: number;
   is_active: boolean;
 };
 
 const emptyForm = {
   name: "", description: "", image_url: "", price: "0", hours: "0",
-  features: "", sort_order: "0", is_active: true,
+  features: "", tags: "", sort_order: "0", is_active: true,
 };
 type FormState = typeof emptyForm;
 
@@ -69,6 +70,7 @@ export function PackagesManager() {
       price: String(o.price ?? 0),
       hours: String(o.hours ?? 0),
       features: (o.features ?? []).join("\n"),
+      tags: (o.tags ?? []).join(", "),
       sort_order: String(o.sort_order ?? 0),
       is_active: o.is_active,
     });
@@ -101,6 +103,7 @@ export function PackagesManager() {
       price: Number(form.price) || 0,
       hours: Number(form.hours) || 0,
       features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
+      tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
     };
@@ -203,6 +206,24 @@ export function PackagesManager() {
               <Textarea rows={4} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })}
                 placeholder={"مونتاج كامل\nغرفة تصوير مجهزة\nتسليم خلال 48 ساعة"} />
             </div>
+            <div className="space-y-2">
+              <Label>التاجات (مفصولة بفاصلة)</Label>
+              <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                placeholder="الأكثر مبيعًا, VIP, عرض خاص" />
+              <div className="flex flex-wrap gap-1.5">
+                {["الأكثر مبيعًا", "VIP", "عرض خاص", "جديد", "الأفضل قيمة"].map((t) => (
+                  <Button key={t} type="button" size="sm" variant="outline" className="h-7 text-xs"
+                    onClick={() => {
+                      const list = form.tags.split(",").map((x) => x.trim()).filter(Boolean);
+                      if (list.includes(t)) return;
+                      setForm({ ...form, tags: [...list, t].join(", ") });
+                    }}>
+                    + {t}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex items-center justify-between rounded-lg border p-3">
               <Label className="mb-0">الباقة مفعّلة (تظهر للاستقبال)</Label>
               <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
@@ -243,6 +264,11 @@ function OfferingCard({ offering, onEdit, onDelete }: { offering: Offering; onEd
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        {(offering.tags ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {offering.tags.map((t) => <Badge key={t} variant="default" className="text-[10px]">{t}</Badge>)}
+          </div>
+        )}
         {offering.description && <p className="text-sm text-muted-foreground line-clamp-3">{offering.description}</p>}
         <div className="flex items-center gap-3 text-sm mt-1">
           <span className="inline-flex items-center gap-1 tabular-nums"><BadgeDollarSign className="h-3.5 w-3.5" /> {Number(offering.price).toLocaleString()} ج</span>
