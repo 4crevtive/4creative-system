@@ -17,13 +17,15 @@ import {
   Phone, Mail, MapPin, Building2, FileText, Pencil, ArrowRight, Calendar, Wallet,
   Package, MessagesSquare, Plus, X, Printer, Globe, Instagram, Facebook, Linkedin,
   Youtube, Cake, IdCard, Flag, Briefcase, Languages, Star, TrendingUp, AlertCircle,
-  CheckCircle2, Sparkles, MessageCircle, Copy, ExternalLink, Clock, User,
+  CheckCircle2, Sparkles, MessageCircle, Copy, ExternalLink, Clock, User, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, formatDistanceToNow, differenceInYears } from "date-fns";
 import { ar } from "date-fns/locale";
 import { contactSchema, validateForm } from "@/lib/validation";
 import { useContactImage, ImageUploadButton } from "@/components/contact-image";
+import { UsageLogsSection } from "@/components/studio/usage-logs-section";
+
 
 export const Route = createFileRoute("/_authenticated/reception/clients/$id")({
   component: ClientProfilePage,
