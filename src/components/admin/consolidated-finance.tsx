@@ -182,7 +182,7 @@ export function ConsolidatedFinance() {
       "النوع": m.direction === "in" ? "دخل" : "منصرف",
       "التصنيف": m.category ?? "",
       "الوصف": m.description ?? "",
-      "العميل": m.contact?.full_name ?? "",
+      "العميل": m.client_label ?? "",
       "الموظف": m.created_by ? (profileName.get(m.created_by) ?? "") : "",
       "المبلغ (ج)": Number(m.amount),
     }));
