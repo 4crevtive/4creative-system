@@ -254,19 +254,33 @@ function ReceptionPackages() {
           )}
         </TabsContent>
 
-        <TabsContent value="catalog" className="mt-4">
-          {offerings.length === 0 ? (
+        <TabsContent value="catalog" className="mt-4 space-y-4">
+          <Card className="p-3 flex items-center gap-3 flex-wrap">
+            <Label className="mb-0 text-sm text-muted-foreground">ترتيب/تصفية حسب الغرفة</Label>
+            <Select value={roomFilter} onValueChange={setRoomFilter}>
+              <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل الغرف</SelectItem>
+                {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+                <SelectItem value="none">بدون غرفة</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-xs text-muted-foreground tabular-nums">{catalog.length} باقة</span>
+          </Card>
+
+          {catalog.length === 0 ? (
             <Card className="p-12 text-center text-muted-foreground">
-              لا توجد باقات في الكتالوج — تُضاف من داشبورد الإدارة (الباقات والأسعار).
+              لا توجد باقات مطابقة — تُضاف من داشبورد الإدارة (الباقات والأسعار).
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {offerings.filter((o) => o.is_active).map((o) => (
-                <CatalogCard key={o.id} offering={o} onUse={() => { openNew(); pickOffering(o.id); }} />
+              {catalog.map((o) => (
+                <CatalogCard key={o.id} offering={o} roomName={roomName(o.room_id)} onUse={() => { openNew(); pickOffering(o.id); }} />
               ))}
             </div>
           )}
         </TabsContent>
+
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
