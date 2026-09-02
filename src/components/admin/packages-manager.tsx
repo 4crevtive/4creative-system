@@ -14,7 +14,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Package, Plus, Pencil, Trash2, Camera, Loader2, Clock, BadgeDollarSign } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Package, Plus, Pencil, Trash2, Camera, Loader2, Clock, BadgeDollarSign, DoorOpen } from "lucide-react";
 import { usePackageImage } from "@/components/package-image";
 
 export type Offering = {
@@ -28,11 +29,14 @@ export type Offering = {
   tags: string[];
   sort_order: number;
   is_active: boolean;
+  room_id: string | null;
 };
+
+type Room = { id: string; name_ar: string; code: string };
 
 const emptyForm = {
   name: "", description: "", image_url: "", price: "0", hours: "0",
-  features: "", tags: "", sort_order: "0", is_active: true,
+  features: "", tags: "", sort_order: "0", is_active: true, room_id: "",
 };
 type FormState = typeof emptyForm;
 
