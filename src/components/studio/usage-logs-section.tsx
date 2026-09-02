@@ -137,7 +137,12 @@ export function UsageLogsSection({ contactId }: { contactId: string }) {
 
     setBusy(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(editing ? "تم تحديث السجل" : "تمت إضافة السجل");
+    toast.success(
+      editing ? "تم تحديث السجل"
+      : payload.package_id && hoursToCharge > 0
+        ? `تمت إضافة السجل وخصم ${hoursToCharge} ساعة من الباقة`
+        : "تمت إضافة السجل"
+    );
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["usage-logs", contactId] });
     qc.invalidateQueries({ queryKey: ["client-packages-lite", contactId] });
