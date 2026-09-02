@@ -306,7 +306,7 @@ export function PackagesManager() {
   );
 }
 
-function OfferingCard({ offering, onEdit, onDelete }: { offering: Offering; onEdit: () => void; onDelete: () => void }) {
+function OfferingCard({ offering, roomName, onEdit, onDelete }: { offering: Offering; roomName: string | null; onEdit: () => void; onDelete: () => void }) {
   const src = usePackageImage(offering.image_url);
   return (
     <Card className="overflow-hidden flex flex-col hover:shadow-[var(--shadow-elegant)] transition-shadow">
@@ -318,6 +318,10 @@ function OfferingCard({ offering, onEdit, onDelete }: { offering: Offering; onEd
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        <Badge variant="outline" className="w-fit gap-1 text-[10px]">
+          <DoorOpen className="h-3 w-3" /> {roomName ?? "غير مخصصة لغرفة"}
+        </Badge>
+
         {(offering.tags ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1">
             {offering.tags.map((t) => <Badge key={t} variant="default" className="text-[10px]">{t}</Badge>)}
