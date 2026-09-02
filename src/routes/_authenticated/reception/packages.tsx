@@ -41,7 +41,10 @@ export const Route = createFileRoute("/_authenticated/reception/packages")({
 type Offering = {
   id: string; name: string; description: string | null; image_url: string | null;
   price: number; hours: number; features: string[]; tags?: string[]; is_active: boolean;
+  room_id: string | null;
 };
+
+type Room = { id: string; name_ar: string; code: string };
 
 type ClientPackage = {
   id: string; name: string; contact_id: string; offering_id: string | null;
@@ -64,11 +67,24 @@ function ReceptionPackages() {
   const [deleting, setDeleting] = useState<ClientPackage | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [busy, setBusy] = useState(false);
+  const [roomFilter, setRoomFilter] = useState<string>("all");
 
   const { data: offerings = [] } = useQuery({
     queryKey: ["package_offerings"],
     queryFn: async () => ((await supabase.from("package_offerings").select("*").order("sort_order")).data ?? []) as Offering[],
   });
+
+  const { data: rooms = [] } = useQuery({
+    queryKey: ["rooms-lite"],
+    queryFn: async () => ((await supabase.from("rooms").select("id, name_ar, code").order("code")).data ?? []) as Room[],
+  });
+  const roomName = (id: string | null) => rooms.find((r) => r.id === id)?.name_ar ?? null;
+
+  const catalog = offerings
+    .filter((o) => o.is_active)
+    .filter((o) => roomFilter === "all" || (roomFilter === "none" ? !o.room_id : o.room_id === roomFilter))
+    .slice()
+    .sort((a, b) => (roomName(a.room_id) ?? "zzz").localeCompare(roomName(b.room_id) ?? "zzz", "ar"));
 
   const { data: packages = [] } = useQuery({
     queryKey: ["studio-packages-list"],
@@ -238,19 +254,33 @@ function ReceptionPackages() {
           )}
         </TabsContent>
 
-        <TabsContent value="catalog" className="mt-4">
-          {offerings.length === 0 ? (
+        <TabsContent value="catalog" className="mt-4 space-y-4">
+          <Card className="p-3 flex items-center gap-3 flex-wrap">
+            <Label className="mb-0 text-sm text-muted-foreground">ترتيب/تصفية حسب الغرفة</Label>
+            <Select value={roomFilter} onValueChange={setRoomFilter}>
+              <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل الغرف</SelectItem>
+                {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+                <SelectItem value="none">بدون غرفة</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-xs text-muted-foreground tabular-nums">{catalog.length} باقة</span>
+          </Card>
+
+          {catalog.length === 0 ? (
             <Card className="p-12 text-center text-muted-foreground">
-              لا توجد باقات في الكتالوج — تُضاف من داشبورد الإدارة (الباقات والأسعار).
+              لا توجد باقات مطابقة — تُضاف من داشبورد الإدارة (الباقات والأسعار).
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {offerings.filter((o) => o.is_active).map((o) => (
-                <CatalogCard key={o.id} offering={o} onUse={() => { openNew(); pickOffering(o.id); }} />
+              {catalog.map((o) => (
+                <CatalogCard key={o.id} offering={o} roomName={roomName(o.room_id)} onUse={() => { openNew(); pickOffering(o.id); }} />
               ))}
             </div>
           )}
         </TabsContent>
+
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -338,7 +368,7 @@ function ReceptionPackages() {
   );
 }
 
-function CatalogCard({ offering, onUse }: { offering: Offering; onUse: () => void }) {
+function CatalogCard({ offering, roomName, onUse }: { offering: Offering; roomName: string | null; onUse: () => void }) {
   const src = usePackageImage(offering.image_url);
   return (
     <Card className="overflow-hidden flex flex-col">
@@ -349,6 +379,8 @@ function CatalogCard({ offering, onUse }: { offering: Offering; onUse: () => voi
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        <Badge variant="outline" className="w-fit text-[10px]">🚪 {roomName ?? "غير مخصصة لغرفة"}</Badge>
+
         {(offering.tags ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1">
             {offering.tags!.map((t) => <Badge key={t} className="text-[10px]">{t}</Badge>)}

@@ -14,7 +14,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Package, Plus, Pencil, Trash2, Camera, Loader2, Clock, BadgeDollarSign } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Package, Plus, Pencil, Trash2, Camera, Loader2, Clock, BadgeDollarSign, DoorOpen } from "lucide-react";
 import { usePackageImage } from "@/components/package-image";
 
 export type Offering = {
@@ -28,11 +29,14 @@ export type Offering = {
   tags: string[];
   sort_order: number;
   is_active: boolean;
+  room_id: string | null;
 };
+
+type Room = { id: string; name_ar: string; code: string };
 
 const emptyForm = {
   name: "", description: "", image_url: "", price: "0", hours: "0",
-  features: "", tags: "", sort_order: "0", is_active: true,
+  features: "", tags: "", sort_order: "0", is_active: true, room_id: "",
 };
 type FormState = typeof emptyForm;
 
@@ -44,6 +48,17 @@ export function PackagesManager() {
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState<Offering | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [roomFilter, setRoomFilter] = useState<string>("all");
+
+  const { data: rooms = [] } = useQuery({
+    queryKey: ["rooms-lite"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("rooms").select("id, name_ar, code").order("code");
+      if (error) throw error;
+      return (data ?? []) as Room[];
+    },
+  });
+  const roomName = (id: string | null) => rooms.find((r) => r.id === id)?.name_ar ?? null;
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["package_offerings"],
@@ -54,6 +69,16 @@ export function PackagesManager() {
       return (data ?? []) as Offering[];
     },
   });
+
+  const visible = items
+    .filter((o) => roomFilter === "all" || (roomFilter === "none" ? !o.room_id : o.room_id === roomFilter))
+    .slice()
+    .sort((a, b) => {
+      const ra = roomName(a.room_id) ?? "zzz";
+      const rb = roomName(b.room_id) ?? "zzz";
+      if (ra !== rb) return ra.localeCompare(rb, "ar");
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    });
 
   function openNew() {
     setEditing(null);
@@ -73,6 +98,7 @@ export function PackagesManager() {
       tags: (o.tags ?? []).join(", "),
       sort_order: String(o.sort_order ?? 0),
       is_active: o.is_active,
+      room_id: o.room_id ?? "",
     });
     setOpen(true);
   }
@@ -106,6 +132,7 @@ export function PackagesManager() {
       tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
+      room_id: form.room_id || null,
     };
     const { error } = editing
       ? await supabase.from("package_offerings").update(payload).eq("id", editing.id)
@@ -142,17 +169,32 @@ export function PackagesManager() {
         <Button onClick={openNew}><Plus className="h-4 w-4 ml-1" /> باقة جديدة</Button>
       </div>
 
+      <Card className="p-3 flex items-center gap-3 flex-wrap">
+        <Label className="mb-0 text-sm text-muted-foreground">ترتيب/تصفية حسب الغرفة</Label>
+        <Select value={roomFilter} onValueChange={setRoomFilter}>
+          <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">كل الغرف</SelectItem>
+            {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+            <SelectItem value="none">بدون غرفة</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-muted-foreground tabular-nums">{visible.length} باقة</span>
+      </Card>
+
       {isLoading ? (
         <Card className="p-12 text-center text-muted-foreground">جارٍ التحميل…</Card>
-      ) : items.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">لا توجد باقات بعد — أضف أول باقة.</Card>
+      ) : visible.length === 0 ? (
+        <Card className="p-12 text-center text-muted-foreground">لا توجد باقات مطابقة.</Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((o) => (
-            <OfferingCard key={o.id} offering={o} onEdit={() => openEdit(o)} onDelete={() => setDeleting(o)} />
+          {visible.map((o) => (
+            <OfferingCard key={o.id} offering={o} roomName={roomName(o.room_id)} onEdit={() => openEdit(o)} onDelete={() => setDeleting(o)} />
           ))}
         </div>
       )}
+
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent dir="rtl" className="max-w-lg max-h-[92vh] overflow-y-auto">
@@ -179,9 +221,21 @@ export function PackagesManager() {
             </div>
 
             <div className="space-y-2">
+              <Label>الباقة خاصة بـ (الغرفة)</Label>
+              <Select value={form.room_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, room_id: v === "__none__" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="اختر الغرفة" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">غير مخصصة لغرفة</SelectItem>
+                  {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>اسم الباقة</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="مثال: باقة 10 ساعات تصوير" />
             </div>
+
             <div className="space-y-2">
               <Label>الوصف (نص الباقة)</Label>
               <Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -252,7 +306,7 @@ export function PackagesManager() {
   );
 }
 
-function OfferingCard({ offering, onEdit, onDelete }: { offering: Offering; onEdit: () => void; onDelete: () => void }) {
+function OfferingCard({ offering, roomName, onEdit, onDelete }: { offering: Offering; roomName: string | null; onEdit: () => void; onDelete: () => void }) {
   const src = usePackageImage(offering.image_url);
   return (
     <Card className="overflow-hidden flex flex-col hover:shadow-[var(--shadow-elegant)] transition-shadow">
@@ -264,6 +318,10 @@ function OfferingCard({ offering, onEdit, onDelete }: { offering: Offering; onEd
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        <Badge variant="outline" className="w-fit gap-1 text-[10px]">
+          <DoorOpen className="h-3 w-3" /> {roomName ?? "غير مخصصة لغرفة"}
+        </Badge>
+
         {(offering.tags ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1">
             {offering.tags.map((t) => <Badge key={t} variant="default" className="text-[10px]">{t}</Badge>)}
