@@ -221,9 +221,21 @@ export function PackagesManager() {
             </div>
 
             <div className="space-y-2">
+              <Label>الباقة خاصة بـ (الغرفة)</Label>
+              <Select value={form.room_id || "__none__"}
+                onValueChange={(v) => setForm({ ...form, room_id: v === "__none__" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="اختر الغرفة" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">غير مخصصة لغرفة</SelectItem>
+                  {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>اسم الباقة</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="مثال: باقة 10 ساعات تصوير" />
             </div>
+
             <div className="space-y-2">
               <Label>الوصف (نص الباقة)</Label>
               <Textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
