@@ -295,6 +295,7 @@ export type Database = {
       }
       cash_movements: {
         Row: {
+          agency_client_id: string | null
           amount: number
           booking_id: string | null
           business_date: string
@@ -308,6 +309,7 @@ export type Database = {
           id: string
         }
         Insert: {
+          agency_client_id?: string | null
           amount: number
           booking_id?: string | null
           business_date?: string
@@ -321,6 +323,7 @@ export type Database = {
           id?: string
         }
         Update: {
+          agency_client_id?: string | null
           amount?: number
           booking_id?: string | null
           business_date?: string
@@ -334,6 +337,13 @@ export type Database = {
           id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cash_movements_agency_client_id_fkey"
+            columns: ["agency_client_id"]
+            isOneToOne: false
+            referencedRelation: "agency_clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cash_movements_booking_id_fkey"
             columns: ["booking_id"]
