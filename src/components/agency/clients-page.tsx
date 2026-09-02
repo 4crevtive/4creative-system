@@ -438,6 +438,10 @@ export function AgencyClientProfile({ clientId }: { clientId: string }) {
         )}
       </Card>
 
+      <ClientIncomesCard projectIds={[...projectIds]} />
+
+
+
       <Card className="p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2"><TrendingDown className="h-4 w-4 text-rose-500" /> مصروفات مرتبطة بالعميل</h2>
         {clientExpenses.length === 0 ? (
