@@ -368,7 +368,7 @@ function ReceptionPackages() {
   );
 }
 
-function CatalogCard({ offering, onUse }: { offering: Offering; onUse: () => void }) {
+function CatalogCard({ offering, roomName, onUse }: { offering: Offering; roomName: string | null; onUse: () => void }) {
   const src = usePackageImage(offering.image_url);
   return (
     <Card className="overflow-hidden flex flex-col">
@@ -379,6 +379,8 @@ function CatalogCard({ offering, onUse }: { offering: Offering; onUse: () => voi
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="font-semibold">{offering.name}</div>
+        <Badge variant="outline" className="w-fit text-[10px]">🚪 {roomName ?? "غير مخصصة لغرفة"}</Badge>
+
         {(offering.tags ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1">
             {offering.tags!.map((t) => <Badge key={t} className="text-[10px]">{t}</Badge>)}
