@@ -77,7 +77,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
     queryKey: ["movements", cashbox?.id, fromDate, toDate],
     enabled: !!cashbox,
     queryFn: async () => (await supabase.from("cash_movements")
-      .select("*, contact:contacts(full_name)")
+      .select("*, contact:contacts(full_name), agency_client:agency_clients(name)")
       .eq("cashbox_id", cashbox!.id)
       .gte("business_date", fromDate)
       .lte("business_date", toDate)
@@ -218,7 +218,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
               />
             </PopoverContent>
           </Popover>
-          <NewMovementDialog cashboxId={cashbox?.id} onCreated={() => qc.invalidateQueries({ queryKey: ["movements"] })} />
+          <NewMovementDialog company={company} cashboxId={cashbox?.id} onCreated={() => qc.invalidateQueries({ queryKey: ["movements"] })} />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4 ml-1" /> طباعة التقرير
           </Button>
@@ -274,9 +274,11 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
                   <div className="font-medium truncate">{m.description || m.category || (m.direction === "in" ? "إيراد" : "مصروف")}</div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
                     {m.category && <Badge variant="outline" className="text-[10px]">{m.category}</Badge>}
-                    {(m as { contact?: { full_name?: string } }).contact?.full_name && (
-                      <span>· {(m as { contact?: { full_name?: string } }).contact?.full_name}</span>
-                    )}
+                    {(() => {
+                      const label = (m as { contact?: { full_name?: string } }).contact?.full_name
+                        ?? (m as { agency_client?: { name?: string } }).agency_client?.name;
+                      return label ? <span>· {label}</span> : null;
+                    })()}
                     <span className="tabular-nums">· {format(new Date(m.created_at), "yyyy/MM/dd HH:mm")}</span>
                   </div>
                 </div>
@@ -296,7 +298,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
   );
 }
 
-function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCreated: () => void }) {
+function NewMovementDialog({ company, cashboxId, onCreated }: { company: CompanyCode; cashboxId?: string; onCreated: () => void }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ direction: "in", amount: "", description: "", contact_id: "", category: "" });
   const [saving, setSaving] = useState(false);
@@ -344,10 +346,18 @@ function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCre
     setShowNewCat(false);
   }
 
-  const { data: contacts } = useQuery({
-    queryKey: ["contacts-lite-fin"],
-    queryFn: async () => (await supabase.from("contacts").select("id, full_name").order("full_name")).data ?? [],
+  const isAgency = company === "agency";
+  const { data: clients } = useQuery({
+    queryKey: ["clients-lite-fin", company],
     enabled: open,
+    queryFn: async () => {
+      if (isAgency) {
+        const { data } = await supabase.from("agency_clients").select("id, name").eq("is_active", true).order("name");
+        return (data ?? []).map((c) => ({ id: c.id, name: c.name }));
+      }
+      const { data } = await supabase.from("contacts").select("id, full_name").order("full_name");
+      return (data ?? []).map((c) => ({ id: c.id, name: c.full_name }));
+    },
   });
 
   async function save() {
@@ -365,11 +375,14 @@ function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCre
       cashbox_id: cashboxId, direction: form.direction as never,
       amount: Number(form.amount), description: form.description,
       category: form.category || null,
-      contact_id: form.contact_id || null, created_by: u.user?.id,
+      contact_id: isAgency ? null : (form.contact_id || null),
+      agency_client_id: isAgency ? (form.contact_id || null) : null,
+      created_by: u.user?.id,
     });
     if (error) { setSaving(false); toast.error(error.message); return; }
 
-    if (form.direction === "in" && form.contact_id) {
+    const linkPayment = !isAgency && form.direction === "in" && !!form.contact_id;
+    if (linkPayment) {
       const { error: payErr } = await supabase.from("payments").insert({
         contact_id: form.contact_id,
         amount: Number(form.amount),
@@ -380,7 +393,7 @@ function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCre
       if (payErr) { setSaving(false); toast.error("تم تسجيل الحركة لكن فشل ربط الدفعة: " + payErr.message); return; }
     }
     setSaving(false);
-    toast.success("تم تسجيل الحركة" + (form.direction === "in" && form.contact_id ? " وإضافتها لبروفايل العميل" : ""));
+    toast.success("تم تسجيل الحركة" + (linkPayment ? " وإضافتها لبروفايل العميل" : ""));
     setOpen(false);
     setForm({ direction: "in", amount: "", description: "", contact_id: "", category: "" });
     onCreated();
@@ -499,11 +512,11 @@ function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCre
           <div className="space-y-2"><Label>المبلغ (ج)</Label><Input type="number" min={0} dir="ltr" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
           <div className="space-y-2"><Label>الوصف</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="space-y-2">
-            <Label>العميل (اختياري)</Label>
+            <Label>{isAgency ? "عميل الماركتنج (اختياري)" : "العميل (اختياري)"}</Label>
             <Select value={form.contact_id} onValueChange={(v) => setForm({ ...form, contact_id: v })}>
               <SelectTrigger><SelectValue placeholder="بدون عميل" /></SelectTrigger>
               <SelectContent>
-                {(contacts ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                {(clients ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
