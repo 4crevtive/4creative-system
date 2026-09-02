@@ -290,16 +290,25 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
 
             {/* Contact */}
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">العميل / الجهة (اختياري)</Label>
+              <Label className="text-xs text-muted-foreground">
+                {company === "agency" ? "عميل الماركتنج (اختياري)" : "عميل الاستوديو (اختياري)"}
+              </Label>
               <Select value={form.watch("contact_id") || "none"}
                 onValueChange={(v) => form.setValue("contact_id", v === "none" ? "" : v)}>
                 <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">بدون</SelectItem>
-                  {(contacts ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                  {company === "agency"
+                    ? (agencyClients ?? []).map((c) => (
+                        <SelectItem key={c.id} value={`ag:${c.id}`}>{c.name}</SelectItem>
+                      ))
+                    : (contacts ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
             </div>
+
 
             {/* Reference */}
             <div className="flex flex-col gap-1.5">
