@@ -99,8 +99,22 @@ export function TaskCard({ task, onChanged, adminMode = false }: {
   const Icon = typeIcon(task.type);
   const [busy, setBusy] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { canManage } = useCanManage();
   const isShooting = task.type === "shooting";
   const overdue = task.due_at && new Date(task.due_at) < new Date() && !["approved", "archived"].includes(task.status);
+
+  async function removeTask() {
+    setBusy(true);
+    const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+    setBusy(false);
+    setConfirmDelete(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("تم حذف التاسك");
+    onChanged();
+  }
+
 
   async function act(to: string, extra?: Record<string, unknown>) {
     setBusy(true);
