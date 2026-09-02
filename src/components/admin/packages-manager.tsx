@@ -169,17 +169,32 @@ export function PackagesManager() {
         <Button onClick={openNew}><Plus className="h-4 w-4 ml-1" /> باقة جديدة</Button>
       </div>
 
+      <Card className="p-3 flex items-center gap-3 flex-wrap">
+        <Label className="mb-0 text-sm text-muted-foreground">ترتيب/تصفية حسب الغرفة</Label>
+        <Select value={roomFilter} onValueChange={setRoomFilter}>
+          <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">كل الغرف</SelectItem>
+            {rooms.map((r) => <SelectItem key={r.id} value={r.id}>{r.name_ar}</SelectItem>)}
+            <SelectItem value="none">بدون غرفة</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-muted-foreground tabular-nums">{visible.length} باقة</span>
+      </Card>
+
       {isLoading ? (
         <Card className="p-12 text-center text-muted-foreground">جارٍ التحميل…</Card>
-      ) : items.length === 0 ? (
-        <Card className="p-12 text-center text-muted-foreground">لا توجد باقات بعد — أضف أول باقة.</Card>
+      ) : visible.length === 0 ? (
+        <Card className="p-12 text-center text-muted-foreground">لا توجد باقات مطابقة.</Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((o) => (
-            <OfferingCard key={o.id} offering={o} onEdit={() => openEdit(o)} onDelete={() => setDeleting(o)} />
+          {visible.map((o) => (
+            <OfferingCard key={o.id} offering={o} roomName={roomName(o.room_id)} onEdit={() => openEdit(o)} onDelete={() => setDeleting(o)} />
           ))}
         </div>
       )}
+
+
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent dir="rtl" className="max-w-lg max-h-[92vh] overflow-y-auto">
