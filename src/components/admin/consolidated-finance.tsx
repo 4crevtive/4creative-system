@@ -162,7 +162,7 @@ export function ConsolidatedFinance() {
   const filteredIgnoringScope = withCompany.filter((m) => {
     if (categoryFilter !== "all" && (m.category || "") !== categoryFilter) return false;
     if (employeeFilter !== "all" && m.created_by !== employeeFilter) return false;
-    if (contactFilter !== "all" && m.contact_id !== contactFilter) return false;
+    if (!matchesClient(m)) return false;
     return true;
   });
   const totalAll = totalsFor(filteredIgnoringScope);
