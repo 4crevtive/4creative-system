@@ -316,10 +316,16 @@ function ClientProfilePage() {
               <TabsTrigger value="bookings"><Calendar className="h-3.5 w-3.5 ml-1" /> الحجوزات ({(bookings ?? []).length})</TabsTrigger>
               <TabsTrigger value="payments"><Wallet className="h-3.5 w-3.5 ml-1" /> المالية</TabsTrigger>
               <TabsTrigger value="packages"><Package className="h-3.5 w-3.5 ml-1" /> الباقات ({(packages ?? []).length})</TabsTrigger>
+              <TabsTrigger value="usage"><Activity className="h-3.5 w-3.5 ml-1" /> سجل الاستخدام</TabsTrigger>
               <TabsTrigger value="history"><MessagesSquare className="h-3.5 w-3.5 ml-1" /> سجل التواصل ({(history ?? []).length})</TabsTrigger>
             </TabsList>
 
+            <TabsContent value="usage" className="mt-4">
+              <UsageLogsSection contactId={id} />
+            </TabsContent>
+
             <TabsContent value="bookings" className="mt-4">
+
               <Card className="p-0 overflow-hidden">
                 {(bookings ?? []).length === 0 ? <Empty text="لا حجوزات بعد" /> : (
                   <table className="w-full text-sm">
