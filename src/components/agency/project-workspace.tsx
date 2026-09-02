@@ -253,6 +253,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <TabsTrigger value="overview"  className="rounded-lg gap-1.5"><Sparkles     className="h-3.5 w-3.5" /> نظرة عامة</TabsTrigger>
             <TabsTrigger value="tasks"     className="rounded-lg gap-1.5"><ListTodo     className="h-3.5 w-3.5" /> المهام</TabsTrigger>
             <TabsTrigger value="finance"   className="rounded-lg gap-1.5"><Wallet       className="h-3.5 w-3.5" /> المالية</TabsTrigger>
+            <TabsTrigger value="income"    className="rounded-lg gap-1.5"><DollarSign   className="h-3.5 w-3.5" /> الدخل</TabsTrigger>
+
             <TabsTrigger value="team"      className="rounded-lg gap-1.5"><Users        className="h-3.5 w-3.5" /> الفريق</TabsTrigger>
             <TabsTrigger value="files"     className="rounded-lg gap-1.5"><Upload       className="h-3.5 w-3.5" /> الملفات</TabsTrigger>
             <TabsTrigger value="milestones" className="rounded-lg gap-1.5"><Flag         className="h-3.5 w-3.5" /> المراحل</TabsTrigger>
