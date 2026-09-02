@@ -119,6 +119,13 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
     queryFn: async () => (await supabase.from("contacts").select("id, full_name").order("full_name")).data ?? [],
   });
 
+  const { data: agencyClients } = useQuery({
+    queryKey: ["agency-clients-lite-cf"],
+    queryFn: async () =>
+      (await supabase.from("agency_clients").select("id, name").order("name")).data ?? [],
+  });
+
+
   const cashboxId = useMemo(() => (boxes ?? []).find((b) => b.code === company)?.id, [boxes, company]);
   const categories = direction === "out" ? OUT_CATEGORIES : IN_CATEGORIES;
 
