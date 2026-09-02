@@ -999,6 +999,7 @@ export type Database = {
           is_active: boolean
           name: string
           price: number
+          room_id: string | null
           sort_order: number
           tags: string[]
           updated_at: string
@@ -1014,6 +1015,7 @@ export type Database = {
           is_active?: boolean
           name: string
           price?: number
+          room_id?: string | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
@@ -1029,11 +1031,20 @@ export type Database = {
           is_active?: boolean
           name?: string
           price?: number
+          room_id?: string | null
           sort_order?: number
           tags?: string[]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "package_offerings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
