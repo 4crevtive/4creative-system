@@ -278,6 +278,14 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         <TabsContent value="finance" className="animate-fade-in">
           <FinanceSection projectId={projectId} expenses={expenses} budget={budget} spent={spent} />
         </TabsContent>
+        <TabsContent value="income" className="animate-fade-in">
+          <ProjectIncomeSection
+            projectId={projectId}
+            projectName={project.name}
+            clientName={(project as { client?: { name?: string } | null }).client?.name ?? null}
+          />
+        </TabsContent>
+
         <TabsContent value="team" className="animate-fade-in">
           <TeamSection projectId={projectId} members={members} />
         </TabsContent>
