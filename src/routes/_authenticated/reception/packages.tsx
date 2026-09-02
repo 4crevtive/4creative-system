@@ -67,11 +67,24 @@ function ReceptionPackages() {
   const [deleting, setDeleting] = useState<ClientPackage | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [busy, setBusy] = useState(false);
+  const [roomFilter, setRoomFilter] = useState<string>("all");
 
   const { data: offerings = [] } = useQuery({
     queryKey: ["package_offerings"],
     queryFn: async () => ((await supabase.from("package_offerings").select("*").order("sort_order")).data ?? []) as Offering[],
   });
+
+  const { data: rooms = [] } = useQuery({
+    queryKey: ["rooms-lite"],
+    queryFn: async () => ((await supabase.from("rooms").select("id, name_ar, code").order("code")).data ?? []) as Room[],
+  });
+  const roomName = (id: string | null) => rooms.find((r) => r.id === id)?.name_ar ?? null;
+
+  const catalog = offerings
+    .filter((o) => o.is_active)
+    .filter((o) => roomFilter === "all" || (roomFilter === "none" ? !o.room_id : o.room_id === roomFilter))
+    .slice()
+    .sort((a, b) => (roomName(a.room_id) ?? "zzz").localeCompare(roomName(b.room_id) ?? "zzz", "ar"));
 
   const { data: packages = [] } = useQuery({
     queryKey: ["studio-packages-list"],
