@@ -68,7 +68,7 @@ export function ConsolidatedFinance() {
     enabled: boxIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("cash_movements")
-        .select("id, direction, amount, category, description, created_at, business_date, cashbox_id, contact_id, created_by, contact:contacts(full_name)")
+        .select("id, direction, amount, category, description, created_at, business_date, cashbox_id, contact_id, agency_client_id, created_by, contact:contacts(full_name)")
         .in("cashbox_id", boxIds)
         .gte("business_date", fromDate).lte("business_date", toDate)
         .order("created_at", { ascending: false });
@@ -115,13 +115,18 @@ export function ConsolidatedFinance() {
   const agencyClients = agency?.clients ?? [];
   const agencyByMovement = agency?.byMovement ?? new Map<string, { clientId: string; name: string }>();
 
+  const agencyNameById = new Map(agencyClients.map((c) => [c.id, c.name]));
+
   const withCompany = (movements ?? []).map((m) => {
     const ag = agencyByMovement.get(m.id);
+    const directAg = (m as { agency_client_id?: string | null }).agency_client_id ?? null;
+    const agId = directAg ?? ag?.clientId ?? null;
     return {
       ...m,
       company: boxToCompany.get(m.cashbox_id) ?? "unknown",
-      agency_client_id: ag?.clientId ?? null,
-      client_label: m.contact?.full_name ?? ag?.name ?? null,
+      agency_client_id: agId,
+      client_label:
+        m.contact?.full_name ?? (agId ? (agencyNameById.get(agId) ?? ag?.name ?? null) : null),
     };
   });
   const categories = useMemo(() => {
@@ -366,7 +371,7 @@ export function ConsolidatedFinance() {
                     movement={{
                       id: m.id, cashbox_id: m.cashbox_id, direction: m.direction, amount: Number(m.amount),
                       category: m.category, description: m.description, business_date: m.business_date,
-                      contact_id: m.contact_id, company: m.company,
+                      contact_id: m.contact_id, agency_client_id: m.agency_client_id, company: m.company,
                     }}
                   />
                   <DeleteMovementButton id={m.id} label={m.description || m.category || "حركة"} />

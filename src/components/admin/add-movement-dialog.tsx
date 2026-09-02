@@ -61,6 +61,7 @@ export type EditableMovement = {
   description: string | null;
   business_date: string;
   contact_id: string | null;
+  agency_client_id?: string | null;
   company?: string;
 };
 
@@ -83,7 +84,9 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
       customCategory: initialCategory === "__other__" ? (movement?.category ?? "") : "",
       business_date: movement?.business_date ? new Date(`${movement.business_date}T00:00:00`) : new Date(),
       method: "كاش",
-      contact_id: movement?.contact_id ?? "",
+      contact_id: movement?.agency_client_id
+        ? `ag:${movement.agency_client_id}`
+        : (movement?.contact_id ?? ""),
       reference: "",
       description: movement?.description ?? "",
       notes: "",
@@ -100,6 +103,13 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
     if (!dirTouched) return;
     form.setValue("category", "");
   }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [companyTouched, setCompanyTouched] = useState(false);
+  useEffect(() => {
+    if (!companyTouched) return;
+    form.setValue("contact_id", "");
+  }, [company]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
 
   const { data: boxes } = useQuery({
@@ -118,6 +128,13 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
     queryKey: ["contacts-lite-cf"],
     queryFn: async () => (await supabase.from("contacts").select("id, full_name").order("full_name")).data ?? [],
   });
+
+  const { data: agencyClients } = useQuery({
+    queryKey: ["agency-clients-lite-cf"],
+    queryFn: async () =>
+      (await supabase.from("agency_clients").select("id, name").order("name")).data ?? [],
+  });
+
 
   const cashboxId = useMemo(() => (boxes ?? []).find((b) => b.code === company)?.id, [boxes, company]);
   const categories = direction === "out" ? OUT_CATEGORIES : IN_CATEGORIES;
@@ -139,7 +156,8 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
         category: finalCategory,
         business_date: format(v.business_date, "yyyy-MM-dd"),
         description: meta ? `${v.description} — ${meta}` : v.description,
-        contact_id: v.contact_id || null,
+        contact_id: v.contact_id?.startsWith("ag:") ? null : (v.contact_id || null),
+        agency_client_id: v.contact_id?.startsWith("ag:") ? v.contact_id.slice(3) : null,
       };
       if (isEdit && movement) {
         const { error } = await supabase.from("cash_movements").update(payload).eq("id", movement.id);
@@ -220,7 +238,7 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
             <Label className="text-xs text-muted-foreground">الشركة / الخزنة</Label>
             <div className="grid grid-cols-2 gap-3">
               {([["studio", "الاستوديو", Camera], ["agency", "4Creative", Megaphone]] as const).map(([code, label, Icon]) => (
-                <button key={code} type="button" onClick={() => form.setValue("company", code)}
+                <button key={code} type="button" onClick={() => { setCompanyTouched(true); form.setValue("company", code); }}
                   className={cn("flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all",
                     company === code ? "border-indigo-300 bg-indigo-50/70 ring-2 ring-indigo-200 text-indigo-700" : "hover:bg-muted/50")}>
                   <Icon className="h-4 w-4" /> {label}
@@ -290,16 +308,25 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
 
             {/* Contact */}
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">العميل / الجهة (اختياري)</Label>
+              <Label className="text-xs text-muted-foreground">
+                {company === "agency" ? "عميل الماركتنج (اختياري)" : "عميل الاستوديو (اختياري)"}
+              </Label>
               <Select value={form.watch("contact_id") || "none"}
                 onValueChange={(v) => form.setValue("contact_id", v === "none" ? "" : v)}>
                 <SelectTrigger className="rounded-lg"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">بدون</SelectItem>
-                  {(contacts ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                  {company === "agency"
+                    ? (agencyClients ?? []).map((c) => (
+                        <SelectItem key={c.id} value={`ag:${c.id}`}>{c.name}</SelectItem>
+                      ))
+                    : (contacts ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>
+                      ))}
                 </SelectContent>
               </Select>
             </div>
+
 
             {/* Reference */}
             <div className="flex flex-col gap-1.5">
