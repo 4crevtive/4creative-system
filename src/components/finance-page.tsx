@@ -346,10 +346,18 @@ function NewMovementDialog({ company, cashboxId, onCreated }: { company: Company
     setShowNewCat(false);
   }
 
-  const { data: contacts } = useQuery({
-    queryKey: ["contacts-lite-fin"],
-    queryFn: async () => (await supabase.from("contacts").select("id, full_name").order("full_name")).data ?? [],
+  const isAgency = company === "agency";
+  const { data: clients } = useQuery({
+    queryKey: ["clients-lite-fin", company],
     enabled: open,
+    queryFn: async () => {
+      if (isAgency) {
+        const { data } = await supabase.from("agency_clients").select("id, name").eq("is_active", true).order("name");
+        return (data ?? []).map((c) => ({ id: c.id, name: c.name }));
+      }
+      const { data } = await supabase.from("contacts").select("id, full_name").order("full_name");
+      return (data ?? []).map((c) => ({ id: c.id, name: c.full_name }));
+    },
   });
 
   async function save() {
