@@ -371,7 +371,7 @@ export function ConsolidatedFinance() {
                     movement={{
                       id: m.id, cashbox_id: m.cashbox_id, direction: m.direction, amount: Number(m.amount),
                       category: m.category, description: m.description, business_date: m.business_date,
-                      contact_id: m.contact_id, company: m.company,
+                      contact_id: m.contact_id, agency_client_id: m.agency_client_id, company: m.company,
                     }}
                   />
                   <DeleteMovementButton id={m.id} label={m.description || m.category || "حركة"} />
