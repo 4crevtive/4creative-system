@@ -68,7 +68,7 @@ export function ConsolidatedFinance() {
     enabled: boxIds.length > 0,
     queryFn: async () => {
       const { data } = await supabase.from("cash_movements")
-        .select("id, direction, amount, category, description, created_at, business_date, cashbox_id, contact_id, created_by, contact:contacts(full_name)")
+        .select("id, direction, amount, category, description, created_at, business_date, cashbox_id, contact_id, agency_client_id, created_by, contact:contacts(full_name)")
         .in("cashbox_id", boxIds)
         .gte("business_date", fromDate).lte("business_date", toDate)
         .order("created_at", { ascending: false });
