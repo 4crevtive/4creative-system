@@ -235,7 +235,7 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
             <Label className="text-xs text-muted-foreground">الشركة / الخزنة</Label>
             <div className="grid grid-cols-2 gap-3">
               {([["studio", "الاستوديو", Camera], ["agency", "4Creative", Megaphone]] as const).map(([code, label, Icon]) => (
-                <button key={code} type="button" onClick={() => form.setValue("company", code)}
+                <button key={code} type="button" onClick={() => { setCompanyTouched(true); form.setValue("company", code); }}
                   className={cn("flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all",
                     company === code ? "border-indigo-300 bg-indigo-50/70 ring-2 ring-indigo-200 text-indigo-700" : "hover:bg-muted/50")}>
                   <Icon className="h-4 w-4" /> {label}
