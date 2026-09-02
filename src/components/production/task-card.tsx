@@ -263,11 +263,39 @@ export function TaskCard({ task, onChanged, adminMode = false }: {
         </div>
       )}
 
+      {/* Manage (admins / department managers only) */}
+      {canManage && (
+        <div className="mt-2 pt-2 border-t flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setOpenEdit(true)}>
+            <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
+          </Button>
+          <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => setConfirmDelete(true)}>
+            <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
+          </Button>
+        </div>
+      )}
+
+      {canManage && <EditTaskDialog task={task} open={openEdit} onOpenChange={setOpenEdit} />}
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف التاسك «{task.title}»؟</AlertDialogTitle>
+            <AlertDialogDescription>سيتم حذف التاسك وكل ما يتعلق به. لا يمكن التراجع.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={removeTask} disabled={busy}>حذف</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Sheet open={openDetails} onOpenChange={setOpenDetails}>
         <SheetContent side="left" className="w-full sm:max-w-3xl overflow-y-auto" dir="rtl">
           <TaskDetailView id={task.id} initialTask={task} />
         </SheetContent>
       </Sheet>
+
     </Card>
   );
 }
