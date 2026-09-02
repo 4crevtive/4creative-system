@@ -115,13 +115,18 @@ export function ConsolidatedFinance() {
   const agencyClients = agency?.clients ?? [];
   const agencyByMovement = agency?.byMovement ?? new Map<string, { clientId: string; name: string }>();
 
+  const agencyNameById = new Map(agencyClients.map((c) => [c.id, c.name]));
+
   const withCompany = (movements ?? []).map((m) => {
     const ag = agencyByMovement.get(m.id);
+    const directAg = (m as { agency_client_id?: string | null }).agency_client_id ?? null;
+    const agId = directAg ?? ag?.clientId ?? null;
     return {
       ...m,
       company: boxToCompany.get(m.cashbox_id) ?? "unknown",
-      agency_client_id: ag?.clientId ?? null,
-      client_label: m.contact?.full_name ?? ag?.name ?? null,
+      agency_client_id: agId,
+      client_label:
+        m.contact?.full_name ?? (agId ? (agencyNameById.get(agId) ?? ag?.name ?? null) : null),
     };
   });
   const categories = useMemo(() => {
