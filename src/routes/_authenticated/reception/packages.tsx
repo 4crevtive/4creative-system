@@ -21,6 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Plus, Pencil, Trash2, Clock, BadgeDollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { usePackageImage } from "@/components/package-image";
+import { useCanManage } from "@/lib/use-can-manage";
+
 
 export const Route = createFileRoute("/_authenticated/reception/packages")({
   head: () => ({
