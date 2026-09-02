@@ -231,20 +231,19 @@ function ReceptionPackages() {
                         </div>
                       )}
 
-                      {canManage ? (
-                        <div className="flex items-center gap-2 pt-2 border-t">
-                          <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
-                            <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
-                          </Button>
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
+                          <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
+                        </Button>
+                        {canManage ? (
                           <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleting(p)}>
                             <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
                           </Button>
-                        </div>
-                      ) : (
-                        <div className="pt-2 border-t text-xs text-muted-foreground">
-                          التعديل والحذف متاح للإدارة فقط
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-xs text-muted-foreground">الحذف للإدارة فقط</span>
+                        )}
+                      </div>
+
 
                     </div>
                   </Card>
