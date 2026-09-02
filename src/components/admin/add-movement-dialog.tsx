@@ -61,6 +61,7 @@ export type EditableMovement = {
   description: string | null;
   business_date: string;
   contact_id: string | null;
+  agency_client_id?: string | null;
   company?: string;
 };
 
