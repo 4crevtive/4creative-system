@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { MilestonesSection, RisksSection, TimeTrackingSection, CalendarSection } from "./project-phase2";
 import { NotesSection, ChatSection, NotificationsSection, SettingsSection } from "./project-modules-ext";
+import { ProjectIncomeSection } from "@/components/agency/project-income";
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { TaskDetailView, type TaskSeed } from "@/components/production/task-detail-view";
 
@@ -253,6 +255,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <TabsTrigger value="overview"  className="rounded-lg gap-1.5"><Sparkles     className="h-3.5 w-3.5" /> نظرة عامة</TabsTrigger>
             <TabsTrigger value="tasks"     className="rounded-lg gap-1.5"><ListTodo     className="h-3.5 w-3.5" /> المهام</TabsTrigger>
             <TabsTrigger value="finance"   className="rounded-lg gap-1.5"><Wallet       className="h-3.5 w-3.5" /> المالية</TabsTrigger>
+            <TabsTrigger value="income"    className="rounded-lg gap-1.5"><DollarSign   className="h-3.5 w-3.5" /> الدخل</TabsTrigger>
+
             <TabsTrigger value="team"      className="rounded-lg gap-1.5"><Users        className="h-3.5 w-3.5" /> الفريق</TabsTrigger>
             <TabsTrigger value="files"     className="rounded-lg gap-1.5"><Upload       className="h-3.5 w-3.5" /> الملفات</TabsTrigger>
             <TabsTrigger value="milestones" className="rounded-lg gap-1.5"><Flag         className="h-3.5 w-3.5" /> المراحل</TabsTrigger>
@@ -276,6 +280,14 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         <TabsContent value="finance" className="animate-fade-in">
           <FinanceSection projectId={projectId} expenses={expenses} budget={budget} spent={spent} />
         </TabsContent>
+        <TabsContent value="income" className="animate-fade-in">
+          <ProjectIncomeSection
+            projectId={projectId}
+            projectName={project.name}
+            clientName={(project as { client?: { name?: string } | null }).client?.name ?? null}
+          />
+        </TabsContent>
+
         <TabsContent value="team" className="animate-fade-in">
           <TeamSection projectId={projectId} members={members} />
         </TabsContent>

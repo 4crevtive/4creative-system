@@ -21,6 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Plus, Pencil, Trash2, Clock, BadgeDollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { usePackageImage } from "@/components/package-image";
+import { useCanManage } from "@/lib/use-can-manage";
+
 
 export const Route = createFileRoute("/_authenticated/reception/packages")({
   head: () => ({
@@ -55,7 +57,9 @@ const emptyForm = {
 
 function ReceptionPackages() {
   const qc = useQueryClient();
+  const { canManage } = useCanManage();
   const [open, setOpen] = useState(false);
+
   const [editing, setEditing] = useState<ClientPackage | null>(null);
   const [deleting, setDeleting] = useState<ClientPackage | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
@@ -211,14 +215,21 @@ function ReceptionPackages() {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-2 pt-2 border-t">
-                        <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
-                          <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleting(p)}>
-                          <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
-                        </Button>
-                      </div>
+                      {canManage ? (
+                        <div className="flex items-center gap-2 pt-2 border-t">
+                          <Button variant="outline" size="sm" onClick={() => openEdit(p)}>
+                            <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleting(p)}>
+                            <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="pt-2 border-t text-xs text-muted-foreground">
+                          التعديل والحذف متاح للإدارة فقط
+                        </div>
+                      )}
+
                     </div>
                   </Card>
                 );

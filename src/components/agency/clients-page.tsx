@@ -438,6 +438,10 @@ export function AgencyClientProfile({ clientId }: { clientId: string }) {
         )}
       </Card>
 
+      <ClientIncomesCard projectIds={[...projectIds]} />
+
+
+
       <Card className="p-5 space-y-3">
         <h2 className="font-semibold flex items-center gap-2"><TrendingDown className="h-4 w-4 text-rose-500" /> مصروفات مرتبطة بالعميل</h2>
         {clientExpenses.length === 0 ? (
@@ -459,3 +463,52 @@ export function AgencyClientProfile({ clientId }: { clientId: string }) {
     </div>
   );
 }
+
+/* ── received income across the client's projects ─────── */
+
+function ClientIncomesCard({ projectIds }: { projectIds: string[] }) {
+  const { data: rows = [] } = useQuery({
+    queryKey: ["client_incomes", projectIds.slice().sort().join(",")],
+    enabled: projectIds.length > 0,
+    queryFn: async () =>
+      (await supabase
+        .from("project_incomes")
+        .select("id, amount, received_at, method, title, project:agency_projects(name)")
+        .in("project_id", projectIds)
+        .order("received_at", { ascending: false })).data ?? [],
+  });
+
+  const total = rows.reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+  return (
+    <Card className="p-5 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-semibold flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-emerald-500" /> الدخل المستلم فعليًا
+        </h2>
+        <span className="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">{fmtMoney(total)}</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">لا توجد دفعات مستلمة بعد.</p>
+      ) : (
+        <div className="divide-y">
+          {rows.map((r) => (
+            <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{r.title || "دفعة"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {(r as { project?: { name?: string } | null }).project?.name ?? "—"} • {r.received_at}
+                  {r.method ? ` • ${r.method}` : ""}
+                </div>
+              </div>
+              <div className="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                {fmtMoney(Number(r.amount ?? 0))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+

@@ -4,10 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Clock, Calendar, CalendarClock, Film, Image, Camera, PlayCircle, CheckCircle2, Send, Eye, AlertCircle, ExternalLink, UserPlus, MapPin, BellRing } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Clock, Calendar, CalendarClock, Film, Image, Camera, PlayCircle, CheckCircle2, Send, Eye, AlertCircle, ExternalLink, UserPlus, MapPin, BellRing, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { TaskDetailView } from "@/components/production/task-detail-view";
+import { EditTaskDialog } from "@/components/production/edit-task-dialog";
+import { useCanManage } from "@/lib/use-can-manage";
+
 
 export type ProdTask = {
   id: string; title: string; description: string | null;
@@ -92,8 +99,22 @@ export function TaskCard({ task, onChanged, adminMode = false }: {
   const Icon = typeIcon(task.type);
   const [busy, setBusy] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { canManage } = useCanManage();
   const isShooting = task.type === "shooting";
   const overdue = task.due_at && new Date(task.due_at) < new Date() && !["approved", "archived"].includes(task.status);
+
+  async function removeTask() {
+    setBusy(true);
+    const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+    setBusy(false);
+    setConfirmDelete(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("تم حذف التاسك");
+    onChanged();
+  }
+
 
   async function act(to: string, extra?: Record<string, unknown>) {
     setBusy(true);
@@ -242,11 +263,39 @@ export function TaskCard({ task, onChanged, adminMode = false }: {
         </div>
       )}
 
+      {/* Manage (admins / department managers only) */}
+      {canManage && (
+        <div className="mt-2 pt-2 border-t flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setOpenEdit(true)}>
+            <Pencil className="h-3.5 w-3.5 ml-1" /> تعديل
+          </Button>
+          <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => setConfirmDelete(true)}>
+            <Trash2 className="h-3.5 w-3.5 ml-1" /> حذف
+          </Button>
+        </div>
+      )}
+
+      {canManage && <EditTaskDialog task={task} open={openEdit} onOpenChange={setOpenEdit} />}
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف التاسك «{task.title}»؟</AlertDialogTitle>
+            <AlertDialogDescription>سيتم حذف التاسك وكل ما يتعلق به. لا يمكن التراجع.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={removeTask} disabled={busy}>حذف</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Sheet open={openDetails} onOpenChange={setOpenDetails}>
         <SheetContent side="left" className="w-full sm:max-w-3xl overflow-y-auto" dir="rtl">
           <TaskDetailView id={task.id} initialTask={task} />
         </SheetContent>
       </Sheet>
+
     </Card>
   );
 }
