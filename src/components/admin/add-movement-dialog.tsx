@@ -146,7 +146,8 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
         category: finalCategory,
         business_date: format(v.business_date, "yyyy-MM-dd"),
         description: meta ? `${v.description} — ${meta}` : v.description,
-        contact_id: v.contact_id || null,
+        contact_id: v.contact_id?.startsWith("ag:") ? null : (v.contact_id || null),
+        agency_client_id: v.contact_id?.startsWith("ag:") ? v.contact_id.slice(3) : null,
       };
       if (isEdit && movement) {
         const { error } = await supabase.from("cash_movements").update(payload).eq("id", movement.id);
