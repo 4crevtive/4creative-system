@@ -48,6 +48,17 @@ export function PackagesManager() {
   const [busy, setBusy] = useState(false);
   const [deleting, setDeleting] = useState<Offering | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [roomFilter, setRoomFilter] = useState<string>("all");
+
+  const { data: rooms = [] } = useQuery({
+    queryKey: ["rooms-lite"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("rooms").select("id, name_ar, code").order("code");
+      if (error) throw error;
+      return (data ?? []) as Room[];
+    },
+  });
+  const roomName = (id: string | null) => rooms.find((r) => r.id === id)?.name_ar ?? null;
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["package_offerings"],
@@ -58,6 +69,16 @@ export function PackagesManager() {
       return (data ?? []) as Offering[];
     },
   });
+
+  const visible = items
+    .filter((o) => roomFilter === "all" || (roomFilter === "none" ? !o.room_id : o.room_id === roomFilter))
+    .slice()
+    .sort((a, b) => {
+      const ra = roomName(a.room_id) ?? "zzz";
+      const rb = roomName(b.room_id) ?? "zzz";
+      if (ra !== rb) return ra.localeCompare(rb, "ar");
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    });
 
   function openNew() {
     setEditing(null);
@@ -77,6 +98,7 @@ export function PackagesManager() {
       tags: (o.tags ?? []).join(", "),
       sort_order: String(o.sort_order ?? 0),
       is_active: o.is_active,
+      room_id: o.room_id ?? "",
     });
     setOpen(true);
   }
