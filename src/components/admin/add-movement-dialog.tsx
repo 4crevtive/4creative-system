@@ -101,6 +101,13 @@ export function AddMovementDialog({ movement }: { movement?: EditableMovement })
     form.setValue("category", "");
   }, [direction]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [companyTouched, setCompanyTouched] = useState(false);
+  useEffect(() => {
+    if (!companyTouched) return;
+    form.setValue("contact_id", "");
+  }, [company]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
 
   const { data: boxes } = useQuery({
     queryKey: ["cashboxes-by-company"],
