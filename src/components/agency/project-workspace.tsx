@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { MilestonesSection, RisksSection, TimeTrackingSection, CalendarSection } from "./project-phase2";
 import { NotesSection, ChatSection, NotificationsSection, SettingsSection } from "./project-modules-ext";
+import { ProjectIncomeSection } from "@/components/agency/project-income";
+
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { TaskDetailView, type TaskSeed } from "@/components/production/task-detail-view";
 
