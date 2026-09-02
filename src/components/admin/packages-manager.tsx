@@ -132,6 +132,7 @@ export function PackagesManager() {
       tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
       sort_order: Number(form.sort_order) || 0,
       is_active: form.is_active,
+      room_id: form.room_id || null,
     };
     const { error } = editing
       ? await supabase.from("package_offerings").update(payload).eq("id", editing.id)
