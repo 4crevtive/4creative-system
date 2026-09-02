@@ -77,7 +77,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
     queryKey: ["movements", cashbox?.id, fromDate, toDate],
     enabled: !!cashbox,
     queryFn: async () => (await supabase.from("cash_movements")
-      .select("*, contact:contacts(full_name)")
+      .select("*, contact:contacts(full_name), agency_client:agency_clients(name)")
       .eq("cashbox_id", cashbox!.id)
       .gte("business_date", fromDate)
       .lte("business_date", toDate)
@@ -218,7 +218,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
               />
             </PopoverContent>
           </Popover>
-          <NewMovementDialog cashboxId={cashbox?.id} onCreated={() => qc.invalidateQueries({ queryKey: ["movements"] })} />
+          <NewMovementDialog company={company} cashboxId={cashbox?.id} onCreated={() => qc.invalidateQueries({ queryKey: ["movements"] })} />
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4 ml-1" /> طباعة التقرير
           </Button>
@@ -274,9 +274,11 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
                   <div className="font-medium truncate">{m.description || m.category || (m.direction === "in" ? "إيراد" : "مصروف")}</div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
                     {m.category && <Badge variant="outline" className="text-[10px]">{m.category}</Badge>}
-                    {(m as { contact?: { full_name?: string } }).contact?.full_name && (
-                      <span>· {(m as { contact?: { full_name?: string } }).contact?.full_name}</span>
-                    )}
+                    {(() => {
+                      const label = (m as { contact?: { full_name?: string } }).contact?.full_name
+                        ?? (m as { agency_client?: { name?: string } }).agency_client?.name;
+                      return label ? <span>· {label}</span> : null;
+                    })()}
                     <span className="tabular-nums">· {format(new Date(m.created_at), "yyyy/MM/dd HH:mm")}</span>
                   </div>
                 </div>
@@ -296,7 +298,7 @@ export function FinancePage({ company, title }: { company: CompanyCode; title: s
   );
 }
 
-function NewMovementDialog({ cashboxId, onCreated }: { cashboxId?: string; onCreated: () => void }) {
+function NewMovementDialog({ company, cashboxId, onCreated }: { company: CompanyCode; cashboxId?: string; onCreated: () => void }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ direction: "in", amount: "", description: "", contact_id: "", category: "" });
   const [saving, setSaving] = useState(false);
