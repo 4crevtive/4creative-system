@@ -375,11 +375,14 @@ function NewMovementDialog({ company, cashboxId, onCreated }: { company: Company
       cashbox_id: cashboxId, direction: form.direction as never,
       amount: Number(form.amount), description: form.description,
       category: form.category || null,
-      contact_id: form.contact_id || null, created_by: u.user?.id,
+      contact_id: isAgency ? null : (form.contact_id || null),
+      agency_client_id: isAgency ? (form.contact_id || null) : null,
+      created_by: u.user?.id,
     });
     if (error) { setSaving(false); toast.error(error.message); return; }
 
-    if (form.direction === "in" && form.contact_id) {
+    const linkPayment = !isAgency && form.direction === "in" && !!form.contact_id;
+    if (linkPayment) {
       const { error: payErr } = await supabase.from("payments").insert({
         contact_id: form.contact_id,
         amount: Number(form.amount),
@@ -390,7 +393,7 @@ function NewMovementDialog({ company, cashboxId, onCreated }: { company: Company
       if (payErr) { setSaving(false); toast.error("تم تسجيل الحركة لكن فشل ربط الدفعة: " + payErr.message); return; }
     }
     setSaving(false);
-    toast.success("تم تسجيل الحركة" + (form.direction === "in" && form.contact_id ? " وإضافتها لبروفايل العميل" : ""));
+    toast.success("تم تسجيل الحركة" + (linkPayment ? " وإضافتها لبروفايل العميل" : ""));
     setOpen(false);
     setForm({ direction: "in", amount: "", description: "", contact_id: "", category: "" });
     onCreated();
@@ -509,11 +512,11 @@ function NewMovementDialog({ company, cashboxId, onCreated }: { company: Company
           <div className="space-y-2"><Label>المبلغ (ج)</Label><Input type="number" min={0} dir="ltr" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
           <div className="space-y-2"><Label>الوصف</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="space-y-2">
-            <Label>العميل (اختياري)</Label>
+            <Label>{isAgency ? "عميل الماركتنج (اختياري)" : "العميل (اختياري)"}</Label>
             <Select value={form.contact_id} onValueChange={(v) => setForm({ ...form, contact_id: v })}>
               <SelectTrigger><SelectValue placeholder="بدون عميل" /></SelectTrigger>
               <SelectContent>
-                {(contacts ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                {(clients ?? []).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
