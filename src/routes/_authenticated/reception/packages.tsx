@@ -41,7 +41,10 @@ export const Route = createFileRoute("/_authenticated/reception/packages")({
 type Offering = {
   id: string; name: string; description: string | null; image_url: string | null;
   price: number; hours: number; features: string[]; tags?: string[]; is_active: boolean;
+  room_id: string | null;
 };
+
+type Room = { id: string; name_ar: string; code: string };
 
 type ClientPackage = {
   id: string; name: string; contact_id: string; offering_id: string | null;
