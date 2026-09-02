@@ -351,7 +351,7 @@ export function ConsolidatedFinance() {
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap mt-0.5">
                     <Badge variant="outline" className="text-[10px] rounded-md">{COMPANY_LABEL[m.company] ?? m.company}</Badge>
                     {m.category && <Badge variant="outline" className="text-[10px] rounded-md">{m.category}</Badge>}
-                    {m.contact?.full_name && <span>· {m.contact.full_name}</span>}
+                    {m.client_label && <span>· {m.client_label}</span>}
                     {m.created_by && <span>· {profileName.get(m.created_by) ?? ""}</span>}
                     <span className="tabular-nums">· {format(new Date(m.created_at), "yyyy/MM/dd HH:mm")}</span>
                   </div>
