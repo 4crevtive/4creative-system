@@ -57,7 +57,9 @@ const emptyForm = {
 
 function ReceptionPackages() {
   const qc = useQueryClient();
+  const { canManage } = useCanManage();
   const [open, setOpen] = useState(false);
+
   const [editing, setEditing] = useState<ClientPackage | null>(null);
   const [deleting, setDeleting] = useState<ClientPackage | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
